@@ -1,0 +1,25 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# Database
+db.sqlite3
+
+# Machine learning artifacts
+*.pkl
+datasets/
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# System files
+.DS_Store
