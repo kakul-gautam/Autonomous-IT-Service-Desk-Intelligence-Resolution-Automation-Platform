@@ -1,0 +1,74 @@
+﻿{% extends 'tickets/base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-wrapper { display: flex; align-items: center; min-height: calc(100vh - 130px); }
+    .auth-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 8px 32px rgba(37,99,235,0.1); overflow: hidden; }
+    .auth-brand { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 2rem 2rem 1.5rem; text-align: center; }
+    .auth-brand h4 { color: #fff; font-weight: 800; margin: 0.5rem 0 0.25rem; font-size: 1.4rem; }
+    .auth-brand p  { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+    .auth-body { padding: 2rem; }
+    .form-label { font-size: 0.85rem; font-weight: 600; color: #374151; }
+    .form-control { border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.9rem; padding: 0.55rem 0.85rem; }
+    .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .input-icon-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; pointer-events: none; }
+    .input-icon-wrapper .form-control { padding-left: 2.2rem; }
+    .auth-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 1rem 2rem; text-align: center; font-size: 0.88rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="w-100">
+        <div class="row justify-content-center">
+            <div class="col-sm-10 col-md-7 col-lg-5 col-xl-4">
+                <div class="auth-card">
+                    <div class="auth-brand">
+                        <i class="bi bi-shield-check" style="font-size:2.2rem;color:#2563eb"></i>
+                        <h4>HelpDesk<span style="color:#60a5fa">Pro</span></h4>
+                        <p>Sign in to your account</p>
+                    </div>
+                    <div class="auth-body">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger d-flex align-items-center gap-2" style="font-size:0.88rem">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        {% if messages %}{% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} d-flex align-items-center gap-2" style="font-size:0.88rem">
+                            <i class="bi bi-info-circle-fill"></i>{{ message }}
+                        </div>
+                        {% endfor %}{% endif %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label" for="id_username">Username</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="bi bi-person input-icon"></i>
+                                    {{ form.username }}
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label" for="id_password">Password</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="bi bi-lock input-icon"></i>
+                                    {{ form.password }}
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" style="border-radius:8px;padding:0.65rem;font-weight:600">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </form>
+                    </div>
+                    <div class="auth-footer">
+                        New user? <a href="{% url 'register' %}" style="color:#2563eb;font-weight:600">Create an account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'tickets/base.html' %}
+{% block title %}Create Ticket{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-label { font-size: 0.85rem; font-weight: 600; color: #374151; }
+    .form-control, .form-select { border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.9rem; }
+    .form-control:focus, .form-select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .ai-panel { background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.25rem; }
+    .ai-item { display: flex; align-items: flex-start; gap: 0.65rem; margin-bottom: 0.55rem; font-size: 0.87rem; color: #374151; }
+    .ai-item i { color: #2563eb; margin-top: 1px; flex-shrink: 0; }
+    .tip-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; }
+    .tip-panel li { font-size: 0.87rem; color: #64748b; margin-bottom: 0.3rem; }
+    .field-err { font-size: 0.8rem; color: #dc2626; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col">
+        <h4 class="fw-bold mb-1">
+            <i class="bi bi-plus-circle me-2 text-primary"></i>Create New Ticket
+        </h4>
+        <p class="text-muted mb-0" style="font-size:0.9rem">
+            Describe your IT issue and our AI will classify and suggest a resolution
+        </p>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header" style="background:#f8fafc">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-card-text me-2 text-primary"></i>Ticket Details
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                {% if form.errors %}
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-4"
+                     style="font-size:0.88rem">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Please fix the errors below before submitting.
+                </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="id_title" class="form-label">
+                            Ticket Title <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% for e in form.title.errors %}
+                        <div class="field-err"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>
+                        {% endfor %}
+                        <div class="form-text">Brief summary (e.g., "Cannot connect to VPN")</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_description" class="form-label">
+                            Detailed Description <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% for e in form.description.errors %}
+                        <div class="field-err"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>
+                        {% endfor %}
+                        <div class="form-text">More detail = better AI suggestions</div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4"
+                                style="border-radius:8px;font-weight:600">
+                            <i class="bi bi-send me-2"></i>Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="ai-panel mb-3">
+            <h6 class="fw-bold mb-3">
+                <i class="bi bi-robot me-2" style="color:#2563eb"></i>AI-Powered Processing
+            </h6>
+            <div class="ai-item"><i class="bi bi-tag-fill"></i>Auto-classifies ticket category</div>
+            <div class="ai-item"><i class="bi bi-exclamation-circle-fill"></i>Detects priority level</div>
+            <div class="ai-item"><i class="bi bi-search"></i>Finds similar past tickets</div>
+            <div class="ai-item"><i class="bi bi-lightbulb-fill"></i>Recommends proven solutions</div>
+        </div>
+        <div class="tip-panel">
+            <h6 class="fw-bold mb-2" style="font-size:0.88rem">
+                <i class="bi bi-lightbulb me-2 text-warning"></i>Tips for Better Results
+            </h6>
+            <ul class="mb-0 ps-3">
+                <li>Include specific error messages</li>
+                <li>Mention what you have already tried</li>
+                <li>Name the affected software or device</li>
+                <li>Note when the problem started</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
