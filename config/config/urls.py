@@ -32,6 +32,9 @@ urlpatterns = [
     # Dashboard app - displays overview and analytics
     path('dashboard/', include('dashboard.urls')),
 
+    # Support app - community/support issues like GitHub Issues
+    path('support/', include('support.urls')),
+
     # Users app - authentication (register/login/logout)
     path('', include('users.urls')),
 ]
