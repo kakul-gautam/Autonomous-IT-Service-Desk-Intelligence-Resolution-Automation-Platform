@@ -1,11 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+import logging
 from .forms import TicketForm
 from .models import Ticket
-from ai_models.inference.ticket_classifier import predict_with_confidence
-from ai_engine.engine import detect_priority, recommend_solution
+from ai_models.inference.predictor import predict_with_confidence
+from ai_engine.engine import detect_priority
+from ai_engine.suggestion_engine import get_ai_solution
 from ai_engine.similarity import find_similar_tickets, compute_automation_confidence
+
+logger = logging.getLogger(__name__)
 
 # ============================================================================
 # HYBRID AI SYSTEM: Machine Learning + Rule-Based Safety Overrides
@@ -91,8 +95,9 @@ def create_ticket(request):
     if request.method == 'POST':
         form = TicketForm(request.POST)
         if form.is_valid():
-            # Create ticket instance (not saved yet)
-            ticket = form.save(commit=False)
+            try:
+                # Create ticket instance (not saved yet)
+                ticket = form.save(commit=False)
 
             # ================================================================
             # IMPROVED NLP INPUT: Combine title + description
@@ -102,40 +107,40 @@ def create_ticket(request):
             #   Title: "Software not opening"
             #   Desc: "Excel crashes when I try to open large files"
             #   Combined text provides stronger signal for Software category
-            combined_text = f"{ticket.title} {ticket.description}"
+                combined_text = f"{ticket.title} {ticket.description}"
             
             # ML Classification: Get prediction with confidence score
             # Uses TF-IDF + Multinomial Naive Bayes trained on 500 examples
-            predicted_category, ml_confidence = predict_with_confidence(
-                combined_text, 
-                confidence_threshold=0.5
-            )
+                predicted_category, ml_confidence = predict_with_confidence(
+                    combined_text,
+                    confidence_threshold=0.5
+                )
             
             # ================================================================
             # CONFIDENCE-AWARE RULE-BASED OVERRIDE
             # ================================================================
             # If ML confidence is low but title contains clear keywords,
             # we override the prediction. This adds an explainable safety layer.
-            final_category, prediction_source = apply_confidence_aware_override(
-                ticket.title,
-                predicted_category,
-                ml_confidence
-            )
+                final_category, prediction_source = apply_confidence_aware_override(
+                    ticket.title,
+                    predicted_category,
+                    ml_confidence
+                )
             
-            ticket.owner = request.user
-            ticket.category = final_category
-            ticket.priority = detect_priority(ticket.description)
+                ticket.owner = request.user
+                ticket.category = final_category
+                ticket.priority = detect_priority(combined_text, final_category)
             
             # Save ticket to database
-            ticket.save()
+                ticket.save()
             
             # ================================================================
             # CASE-BASED REASONING: Find similar past tickets
             # ================================================================
             # Look for similar tickets in the knowledge base
             # These provide validated solutions from past resolutions
-            all_other_tickets = Ticket.objects.exclude(id=ticket.id)
-            similar_tickets = find_similar_tickets(ticket, all_other_tickets, top_n=3)
+                all_other_tickets = Ticket.objects.exclude(id=ticket.id)
+                similar_tickets = find_similar_tickets(ticket, all_other_tickets, top_n=3)
             
             # ================================================================
             # SOLUTION RECOMMENDATION PRIORITY
@@ -144,35 +149,53 @@ def create_ticket(request):
             # 1. If similar tickets exist, use their solutions (proven effective)
             # 2. If no similar tickets, use category-based default solution
             # 3. If confidence was low, add generic troubleshooting steps
-            if similar_tickets:
-                # Use solution from most similar case
-                ticket.suggested_solution = similar_tickets[0][0].suggested_solution
-            else:
-                # Fall back to category-based solution
-                ticket.suggested_solution = recommend_solution(ticket.category)
+                if similar_tickets:
+                    # Use solution from most similar case
+                    ticket.suggested_solution = similar_tickets[0][0].suggested_solution
+                else:
+                    # Use AI model for solution recommendation
+                    ticket.suggested_solution = get_ai_solution(combined_text)
             
             # Update with final solution
-            ticket.save()
+                ticket.save()
             
             # Compute automation confidence (based on similar tickets found)
-            automation_confidence = compute_automation_confidence(len(similar_tickets))
+                automation_confidence = compute_automation_confidence(len(similar_tickets))
             
             # ================================================================
             # PREPARE CONTEXT FOR TEMPLATE
             # ================================================================
             # Pass all relevant information for transparency
-            context = {
-                'ticket': ticket,
-                'similar_tickets': similar_tickets,
-                'confidence_score': automation_confidence,
-                'ml_confidence': ml_confidence,
-                'ml_confidence_pct': f"{ml_confidence*100:.1f}",
-                'prediction_source': prediction_source,
-                # Flag for template: show warning if override occurred
-                'was_overridden': (prediction_source == "ML + rule override"),
-            }
-            
-            return render(request, 'tickets/ticket_result.html', context)
+                context = {
+                    'ticket': ticket,
+                    'similar_tickets': similar_tickets,
+                    'confidence_score': automation_confidence,
+                    'ml_confidence': ml_confidence,
+                    'ml_confidence_pct': f"{ml_confidence*100:.1f}",
+                    'prediction_source': prediction_source,
+                    # Flag for template: show warning if override occurred
+                    'was_overridden': (prediction_source == "ML + rule override"),
+                }
+
+                logger.info(
+                    'Ticket created: ticket_id=%s owner_id=%s category=%s ml_confidence=%.4f source=%s',
+                    ticket.id,
+                    request.user.id,
+                    ticket.category,
+                    ml_confidence,
+                    prediction_source,
+                )
+                return render(request, 'tickets/ticket_result.html', context)
+            except Exception as e:
+                logger.error('Error in ticket creation: %s', str(e), exc_info=True)
+                return render(
+                    request,
+                    'tickets/create_ticket.html',
+                    {
+                        'form': form,
+                        'error_message': 'An unexpected error occurred while creating the ticket. Please try again.',
+                    }
+                )
     else:
         # GET request - show empty form
         form = TicketForm()
