@@ -12,4 +12,7 @@ urlpatterns = [
     
     # Update ticket resolution status (POST)
     path('ticket/<int:ticket_id>/resolve/', views.update_ticket_resolution, name='resolve_ticket'),
+    
+    # Admin analytics dashboard (staff only)
+    path('admin/', views.admin_dashboard, name='admin_dashboard'),
 ]
