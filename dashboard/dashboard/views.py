@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from tickets.models import Ticket
 from monitoring.models import SystemMetric
 from monitoring.simulator import generate_metrics
@@ -22,12 +22,19 @@ def _ticket_queryset_for_user(user):
 
 @login_required
 def dashboard_view(request):
-
+    """
+    User dashboard - shows personal ticket analytics only.
+    Admins are redirected to the admin analytics dashboard.
+    """
+    # Redirect admins to admin dashboard
+    if _is_admin_user(request.user):
+        return redirect('admin_dashboard')
+    
     # Generate simulated metrics on each load
     generate_metrics()
 
-    is_admin_user = _is_admin_user(request.user)
-    tickets = _ticket_queryset_for_user(request.user)
+    is_admin_user = False  # This is user dashboard, not admin
+    tickets = Ticket.objects.filter(owner=request.user).order_by('-created_at')
 
     total_tickets = tickets.count()
     high_priority_count = tickets.filter(priority__iexact='High').count()
@@ -139,4 +146,83 @@ def update_ticket_resolution(request, ticket_id):
             ticket.save()
     
     return redirect('incidents_home')
+
+
+def _is_staff(user):
+    """Check if user is staff or superuser."""
+    return user.is_staff or user.is_superuser
+
+
+@login_required
+@user_passes_test(_is_staff, login_url='dashboard_home')
+def admin_dashboard(request):
+    """
+    Admin analytics dashboard — restricted to staff/superusers.
+    Displays system-wide statistics, ticket analytics, and user metrics.
+    """
+    from django.contrib.auth.models import User
+    
+    # User statistics
+    total_users = User.objects.count()
+    admin_users = User.objects.filter(is_staff=True).count()
+    
+    # Ticket statistics (ALL tickets, system-wide)
+    all_tickets = Ticket.objects.all()
+    total_tickets = all_tickets.count()
+    
+    # Priority distribution
+    high_priority = all_tickets.filter(priority__iexact='High').count()
+    medium_priority = all_tickets.filter(priority__iexact='Medium').count()
+    low_priority = all_tickets.filter(priority__iexact='Low').count()
+    
+    # Category distribution
+    category_stats = {}
+    for ticket in all_tickets:
+        cat = ticket.category or 'Unknown'
+        category_stats[cat] = category_stats.get(cat, 0) + 1
+    
+    category_labels = list(category_stats.keys())
+    category_counts = list(category_stats.values())
+    
+    # Priority stats for chart
+    priority_labels = ['High', 'Medium', 'Low']
+    priority_counts = [high_priority, medium_priority, low_priority]
+    
+    # Resolution status distribution
+    resolved_count = all_tickets.filter(resolution_status='Resolved').count()
+    pending_count = all_tickets.filter(resolution_status='Pending').count()
+    failed_count = all_tickets.filter(resolution_status='Failed').count()
+    
+    # Calculate success rate
+    success_rate = 0
+    if total_tickets > 0:
+        success_rate = round((resolved_count / total_tickets) * 100, 1)
+    
+    # Recent tickets
+    recent_tickets = all_tickets.order_by('-created_at')[:10]
+    
+    # Convert to JSON for chart.js
+    context = {
+        'total_users': total_users,
+        'admin_users': admin_users,
+        'total_tickets': total_tickets,
+        'high_priority': high_priority,
+        'medium_priority': medium_priority,
+        'low_priority': low_priority,
+        'resolved_count': resolved_count,
+        'pending_count': pending_count,
+        'failed_count': failed_count,
+        'success_rate': success_rate,
+        'recent_tickets': recent_tickets,
+        
+        # For charts
+        'category_labels_json': json.dumps(category_labels),
+        'category_counts_json': json.dumps(category_counts),
+        'priority_labels_json': json.dumps(priority_labels),
+        'priority_counts_json': json.dumps(priority_counts),
+        'resolution_labels_json': json.dumps(['Resolved', 'Pending', 'Failed']),
+        'resolution_counts_json': json.dumps([resolved_count, pending_count, failed_count]),
+    }
+    
+    return render(request, 'dashboard/admin_dashboard.html', context)
 
