@@ -18,7 +18,7 @@ class Ticket(models.Model):
     priority = models.CharField(max_length=50, blank=True)
     
     # AI-generated suggested solution for the ticket
-    suggested_solution = models.TextField(blank=True)
+    suggested_solution = models.TextField(blank=True, null=True)
     
     # Timestamp when the ticket was created
     created_at = models.DateTimeField(auto_now_add=True)
