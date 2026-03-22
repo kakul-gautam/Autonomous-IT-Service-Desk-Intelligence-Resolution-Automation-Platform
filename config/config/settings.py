@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,15 @@ SECRET_KEY = 'django-insecure-zj2jtht_8a)dn&wjmy8)gg%a0ug-1)drcnnf%tw2mmubr7!-tl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Default to local-safe hosts in development; override via env in deployment.
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        'DJANGO_ALLOWED_HOSTS',
+        'localhost,127.0.0.1,[::1],testserver'
+    ).split(',')
+    if host.strip()
+]
 
 
 # Application definition
@@ -43,6 +52,7 @@ INSTALLED_APPS = [
     'dashboard',
     'monitoring',
     'users.apps.UsersConfig',
+    'support.apps.SupportConfig',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +139,45 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'error.log',
+        },
+        'info_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'info.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'tickets': {
+            'handlers': ['file', 'info_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'support': {
+            'handlers': ['file', 'info_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'ai_engine': {
+            'handlers': ['file', 'info_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
