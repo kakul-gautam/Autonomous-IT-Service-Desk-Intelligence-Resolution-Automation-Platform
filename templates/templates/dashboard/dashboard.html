@@ -168,6 +168,9 @@
             <a href="{% url 'create_ticket' %}" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:0.82rem">
                 <i class="bi bi-plus me-1"></i>New
             </a>
+            <a href="{% url 'support_create' %}" class="btn btn-outline-primary btn-sm" style="border-radius:6px;font-size:0.82rem">
+                <i class="bi bi-life-preserver me-1"></i>Need more help?
+            </a>
         </div>
     </div>
     <div class="card-body p-0">
@@ -179,7 +182,7 @@
                         <th style="padding-left:1.25rem">Title</th>
                         <th>Category</th>
                         <th>Priority</th>
-                        <th>Solution Preview</th>
+                        <th>AI Suggested Solution</th>
                         <th>Created</th>
                     </tr>
                 </thead>
@@ -191,6 +194,12 @@
                             {% if is_admin_user and ticket.owner %}
                             <div style="font-size:0.78rem;color:#94a3b8">by {{ ticket.owner.username }}</div>
                             {% endif %}
+                            <div class="mt-1">
+                                <a href="{% url 'support_create' %}?prefill={{ ticket.title|urlencode }}%20-%20{{ ticket.description|truncatechars:180|urlencode }}"
+                                   style="font-size:0.78rem;text-decoration:none;">
+                                    <i class="bi bi-life-preserver me-1"></i>Need more help?
+                                </a>
+                            </div>
                         </td>
                         <td>
                             {% if ticket.category == 'Software' %}
@@ -216,8 +225,8 @@
                             <span class="cat-badge cat-other">{{ ticket.priority|default:"N/A" }}</span>
                             {% endif %}
                         </td>
-                        <td style="font-size:0.85rem;color:#64748b;max-width:200px">
-                            {{ ticket.suggested_solution|truncatewords:10|default:"N/A" }}
+                        <td style="font-size:0.85rem;color:#64748b;max-width:220px">
+                            {{ ticket.suggested_solution|truncatewords:15|default:"No suggestion yet" }}
                         </td>
                         <td style="font-size:0.82rem;color:#94a3b8;white-space:nowrap">
                             {{ ticket.created_at|date:"M d, Y" }}<br>
