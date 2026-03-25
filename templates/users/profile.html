@@ -1,0 +1,224 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile - IT Service Desk{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <strong>{{ profile_user.get_full_name|default:profile_user.username }}</strong>
+            </h1>
+            <p class="text-muted">
+                {% if is_own_profile %}
+                    Your profile
+                {% else %}
+                    User profile
+                {% endif %}
+            </p>
+        </div>
+        {% if is_own_profile %}
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard_home' %}" class="btn btn-outline-primary">
+                Back to Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Profile Information Card -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Account Information</h5>
+                    
+                    <div class="mb-3">
+                        <label class="text-muted small"><strong>Username</strong></label>
+                        <p class="mb-0">{{ profile_user.username }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small"><strong>Email</strong></label>
+                        <p class="mb-0">{{ profile_user.email }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small"><strong>Full Name</strong></label>
+                        <p class="mb-0">{{ profile_user.get_full_name|default:"Not set" }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small"><strong>Account Type</strong></label>
+                        <p class="mb-0">
+                            {% if profile_user.is_staff %}
+                                <span class="badge bg-danger">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-info">Regular User</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="text-muted small"><strong>Member Since</strong></label>
+                        <p class="mb-0">{{ profile_user.date_joined|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Statistics Card -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Ticket Statistics</h5>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h3 class="text-primary mb-0">{{ total_tickets }}</h3>
+                            <small class="text-muted">Total Tickets</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success mb-0">{{ resolved_tickets }}</h3>
+                            <small class="text-muted">Resolved</small>
+                        </div>
+                    </div>
+
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-warning mb-0">{{ pending_tickets }}</h3>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-info mb-0">
+                                {% if total_tickets > 0 %}
+                                    {{ resolution_rate }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h3>
+                            <small class="text-muted">Resolution Rate</small>
+                        </div>
+                    </div>
+
+                    {% if total_tickets > 0 %}
+                    <div class="mt-4">
+                        <div class="progress" style="height: 25px;">
+                            <div 
+                                class="progress-bar bg-success" 
+                                role="progressbar" 
+                                style="width: {% widthratio resolved_tickets total_tickets 100 %}%"
+                                aria-valuenow="{{ resolved_tickets }}"
+                                aria-valuemin="0"
+                                aria-valuemax="{{ total_tickets }}">
+                                {{ resolved_tickets }} Resolved
+                            </div>
+                            <div 
+                                class="progress-bar bg-warning"
+                                role="progressbar"
+                                style="width: {% widthratio pending_tickets total_tickets 100 %}%"
+                                aria-valuenow="{{ pending_tickets }}"
+                                aria-valuemin="0"
+                                aria-valuemax="{{ total_tickets }}">
+                                {{ pending_tickets }} Pending
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Distribution -->
+    {% if category_counts %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Tickets by Category</h5>
+                    
+                    {% for category_data in category_counts %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ category_data.category|default:"Uncategorized" }}</span>
+                            <strong>{{ category_data.count }}</strong>
+                        </div>
+                        <div class="progress">
+                            <div 
+                                class="progress-bar" 
+                                role="progressbar" 
+                                style="width: {% widthratio category_data.count total_tickets 100 %}%"
+                                aria-valuenow="{{ category_data.count }}"
+                                aria-valuemin="0"
+                                aria-valuemax="{{ total_tickets }}">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tickets -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Recent Tickets</h5>
+                    
+                    {% if recent_tickets %}
+                        <div class="list-group list-group-flush">
+                            {% for ticket in recent_tickets %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {{ ticket.title|truncatewords:8 }}
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ ticket.created_at|timesince }} ago
+                                    </small>
+                                </div>
+                                <p class="mb-2 small text-muted">
+                                    {{ ticket.category|default:"Uncategorized" }} • 
+                                    <span class="badge bg-{% if ticket.priority == 'High' %}danger{% elif ticket.priority == 'Medium' %}warning{% else %}info{% endif %}">
+                                        {{ ticket.priority|default:"Medium" }}
+                                    </span>
+                                </p>
+                                <small>{{ ticket.description|truncatewords:15 }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No tickets created yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- View All Tickets Button -->
+    {% if is_own_profile %}
+    <div class="row">
+        <div class="col-md-12">
+            <a href="{% url 'dashboard_home' %}" class="btn btn-primary btn-lg">
+                View All Your Tickets
+            </a>
+            {% if profile_user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                Admin Panel
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Calculate resolution rate for template context -->
+{% if total_tickets > 0 %}
+    {% with resolution_rate=resolved_tickets|add:0 %}
+        <!-- Resolution rate is calculated above -->
+    {% endwith %}
+{% endif %}
+{% endblock %}
