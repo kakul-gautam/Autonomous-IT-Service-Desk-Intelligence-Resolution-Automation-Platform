@@ -1,0 +1,209 @@
+{% extends 'tickets/base.html' %}
+{% block title %}Success - Ticket Resolved{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        text-align: center;
+    }
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3);
+    }
+    .success-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    .success-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #15803d;
+        margin-bottom: 0.5rem;
+    }
+    .success-subtitle {
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+    }
+    .feedback-section {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        text-align: left;
+    }
+    .feedback-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #166534;
+        margin-bottom: 0.5rem;
+    }
+    .feedback-text {
+        color: #166534;
+        font-style: italic;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .btn-primary-success {
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-primary-success:hover {
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+        transform: translateY(-2px);
+    }
+    .btn-secondary-success {
+        background: white;
+        color: #15803d;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #bbf7d0;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-secondary-success:hover {
+        background: #f0fdf4;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    .stat-box {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #16a34a;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-icon">
+        <i class="bi bi-check-lg"></i>
+    </div>
+
+    <div class="success-card">
+        <h2 class="success-title">Ticket Resolved!</h2>
+        <p class="success-subtitle">Great! We're glad the AI solution helped resolve your issue.</p>
+
+        <!-- Ticket Info -->
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+                <div style="text-align: left">
+                    <small style="color: #64748b">Ticket #{{ ticket.id }}</small>
+                    <h5 style="margin: 0.25rem 0; color: #0f172a">{{ ticket.title }}</h5>
+                </div>
+                <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600">✓ Resolved</span>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        {% if ticket.ai_feedback_text %}
+        <div class="feedback-section">
+            <div class="feedback-label">
+                <i class="bi bi-chat-left-text me-1"></i>Your Feedback
+            </div>
+            <div class="feedback-text">
+                "{{ ticket.ai_feedback_text }}"
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-number">{{ ticket.id }}</div>
+                <div class="stat-label">Ticket ID</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ ticket.priority }}</div>
+                <div class="stat-label">Priority</div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 1rem; margin: 1.5rem 0; color: #166534">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Thank you!</strong> Your feedback helps us improve AI recommendations for everyone.
+        </div>
+
+        <!-- Next Steps -->
+        <div style="text-align: left; background: #f8fafc; border-radius: 8px; padding: 1rem; margin: 1.5rem 0">
+            <h6 style="margin: 0 0 0.75rem 0; color: #0f172a">
+                <i class="bi bi-lightning-charge-fill me-1" style="color: #16a34a"></i>What's Next?
+            </h6>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #4b5563; font-size: 0.9rem">
+                <li>Create new tickets anytime you encounter issues</li>
+                <li>Track all your tickets in your dashboard</li>
+                <li>Reach out to support if you need more help</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'dashboard_home' %}" class="btn-primary-success">
+                <i class="bi bi-speedometer2"></i>Back to Dashboard
+            </a>
+            <a href="{% url 'create_ticket' %}" class="btn-secondary-success">
+                <i class="bi bi-plus-circle"></i>Create New Ticket
+            </a>
+        </div>
+    </div>
+
+    <!-- Additional Context -->
+    <div style="text-align: center; color: #64748b; font-size: 0.9rem">
+        <p>
+            <i class="bi bi-lightbulb-fill me-1" style="color: #16a34a"></i>
+            AI-powered solutions are continuously improved by user feedback. Thank you for contributing!
+        </p>
+    </div>
+</div>
+{% endblock %}

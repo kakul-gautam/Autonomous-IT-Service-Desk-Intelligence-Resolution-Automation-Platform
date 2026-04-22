@@ -2,30 +2,348 @@
 
 {% block title %}{{ profile_user.username }}'s Profile - IT Service Desk{% endblock %}
 
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #0f1419 0%, rgba(0, 217, 255, 0.1) 100%);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 16px;
+        padding: 3rem 2.5rem;
+        color: #e0e0e0;
+        margin-bottom: 3rem;
+        box-shadow: 0 0 60px rgba(0, 217, 255, 0.15);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -15%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(0, 217, 255, 0.15), transparent);
+        border-radius: 50%;
+    }
+    
+    .profile-header > * { position: relative; z-index: 2; }
+    
+    .profile-header h1 {
+        color: #00f5ff;
+        font-weight: 900;
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        font-size: 2.5rem;
+        letter-spacing: -0.5px;
+    }
+    
+    .profile-header p {
+        color: #a0f3ff;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    /* Stats Bento Grid */
+    .stat-bento {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-tile {
+        background: linear-gradient(135deg, rgba(26, 31, 40, 0.8), rgba(15, 20, 25, 0.9));
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 14px;
+        padding: 1.8rem;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-tile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-tile:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+        transform: translateY(-8px);
+    }
+    
+    .stat-tile:hover::before { transform: scaleX(1); }
+    
+    .stat-tile .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: inline-block;
+    }
+    
+    .stat-tile .stat-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #00f5ff;
+        text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+    }
+    
+    .stat-tile .stat-label {
+        font-size: 0.9rem;
+        color: #a0f3ff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    /* Account Card */
+    .account-card {
+        background: linear-gradient(135deg, rgba(26, 31, 40, 0.8), rgba(15, 20, 25, 0.9));
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 14px;
+        padding: 2rem;
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.1);
+    }
+    
+    .account-card h5 {
+        color: #00f5ff;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(0, 217, 255, 0.2);
+    }
+    
+    .account-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+    }
+    
+    .account-info-row:last-child { border-bottom: none; }
+    
+    .account-label {
+        color: #a0f3ff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .account-value {
+        color: #e0e0e0;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    
+    .badge-admin {
+        background: linear-gradient(135deg, #ff6b6b, #ff4757);
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    .badge-user {
+        background: linear-gradient(135deg, #00d9ff, #00f5ff);
+        color: #0f1419;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+    }
+    
+    /* Progress Bars */
+    .progress {
+        background: rgba(0, 217, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #00d9ff, #00f5ff) !important;
+        box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+    }
+    
+    /* Page Grid */
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="mb-0">
-                <strong>{{ profile_user.get_full_name|default:profile_user.username }}</strong>
-            </h1>
-            <p class="text-muted">
-                {% if is_own_profile %}
-                    Your profile
-                {% else %}
-                    User profile
-                {% endif %}
-            </p>
+<div style="padding: 2rem 0;">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1 class="mb-2">
+                    <i class="bi bi-person-circle me-2" style="color: #00d9ff;"></i>{{ profile_user.get_full_name|default:profile_user.username }}
+                </h1>
+                <p class="mb-0">
+                    {% if is_own_profile %}
+                        👤 Your Profile
+                    {% else %}
+                        User Profile
+                    {% endif %}
+                </p>
+            </div>
+            {% if is_own_profile %}
+            <div>
+                <a href="{% url 'dashboard_home' %}" class="btn btn-primary" style="font-size: 0.9rem;">
+                    <i class="bi bi-arrow-left me-1"></i>Dashboard
+                </a>
+                <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary ms-2" style="font-size: 0.9rem;">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+            </div>
+            {% endif %}
         </div>
-        {% if is_own_profile %}
-        <div class="col-md-4 text-end">
-            <a href="{% url 'dashboard_home' %}" class="btn btn-outline-primary">
-                Back to Dashboard
-            </a>
+    </div>
+    
+    <!-- Stats Bento Grid -->
+    <div class="stat-bento">
+        <div class="stat-tile">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ total_tickets }}</div>
+            <div class="stat-label">Total Tickets</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ resolved_tickets }}</div>
+            <div class="stat-label">Resolved</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">{{ pending_tickets }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{% if total_tickets > 0 %}{{ resolution_rate }}%{% else %}0%{% endif %}</div>
+            <div class="stat-label">Resolution Rate</div>
+        </div>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="profile-grid">
+        <!-- Account Information -->
+        <div class="account-card">
+            <h5><i class="bi bi-shield-check me-2" style="color: #00d9ff;"></i>Account Information</h5>
+            <div class="account-info-row">
+                <span class="account-label">Username</span>
+                <span class="account-value">{{ profile_user.username }}</span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-label">Email</span>
+                <span class="account-value">{{ profile_user.email }}</span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-label">Full Name</span>
+                <span class="account-value">{{ profile_user.get_full_name|default:"Not set" }}</span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-label">Account Type</span>
+                <span class="account-value">
+                    {% if profile_user.is_staff %}
+                        <span class="badge-admin">Administrator</span>
+                    {% else %}
+                        <span class="badge-user">Regular User</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-label">Member Since</span>
+                <span class="account-value">{{ profile_user.date_joined|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        
+        <!-- Category Distribution -->
+        {% if category_counts %}
+        <div class="account-card">
+            <h5><i class="bi bi-tags me-2" style="color: #1edfa7;"></i>Tickets by Category</h5>
+            {% for category_data in category_counts %}
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: #e0e0e0; font-weight: 500;">{{ category_data.category|default:"Uncategorized" }}</span>
+                    <span style="color: #00d9ff; font-weight: 700;">{{ category_data.count }}</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: {% widthratio category_data.count total_tickets 100 %}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
     </div>
+    
+    <!-- Recent Tickets -->
+    <div class="account-card" style="margin-bottom: 2rem;">
+        <h5><i class="bi bi-clock-history me-2" style="color: #ffc107;"></i>Recent Tickets</h5>
+        {% if recent_tickets %}
+        <div style="display: grid; gap: 1rem;">
+            {% for ticket in recent_tickets %}
+            <div style="padding: 1rem; background: rgba(0, 217, 255, 0.05); border-radius: 10px; border-left: 3px solid #00d9ff;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <h6 style="color: #e0e0e0; margin: 0; font-weight: 600;">{{ ticket.title|truncatewords:8 }}</h6>
+                    <small style="color: #a0f3ff;">{{ ticket.created_at|timesince }} ago</small>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.85rem; color: #a0f3ff;">{{ ticket.category|default:"Uncategorized" }}</span>
+                    <span class="badge" style="background: {% if ticket.priority == 'High' %}#ff6b9d{% elif ticket.priority == 'Medium' %}#ffc107{% else %}#00d9ff{% endif %}; color: {% if ticket.priority == 'Medium' %}#000{% else %}#fff{% endif %}; font-size: 0.75rem;">
+                        {{ ticket.priority|default:"Medium" }}
+                    </span>
+                </div>
+                <small style="color: #999;">{{ ticket.description|truncatewords:15 }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: #999; text-align: center; padding: 2rem 0; margin: 0;">
+            <i class="bi bi-inbox" style="font-size: 2rem; color: #666;"></i><br>
+            No tickets created yet
+        </p>
+        {% endif %}
+    </div>
+    
+    <!-- Action Buttons -->
+    {% if is_own_profile %}
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{% url 'dashboard_home' %}" class="btn btn-primary btn-lg" style="flex: 1; min-width: 200px;">
+            <i class="bi bi-speedometer2 me-2"></i>View Your Tickets
+        </a>
+        <a href="{% url 'change_password' %}" class="btn btn-outline-secondary btn-lg" style="flex: 1; min-width: 200px;">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+        {% if profile_user.is_staff %}
+        <a href="/admin/" class="btn btn-outline-secondary btn-lg" style="flex: 1; min-width: 200px;">
+            <i class="bi bi-shield-lock me-2"></i>Admin Panel
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
 
     <!-- Profile Information Card -->
     <div class="row mb-4">

@@ -1,0 +1,247 @@
+{% extends 'tickets/base.html' %}
+{% block title %}Routed to Support{% endblock %}
+
+{% block extra_css %}
+<style>
+    .routed-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        text-align: center;
+    }
+    .routed-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3);
+    }
+    .routed-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    .routed-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #be185d;
+        margin-bottom: 0.5rem;
+    }
+    .routed-subtitle {
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+    }
+    .feedback-section {
+        background: #ffe4e6;
+        border: 1px solid #fbcfe8;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        text-align: left;
+    }
+    .feedback-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #9a3412;
+        margin-bottom: 0.5rem;
+    }
+    .feedback-text {
+        color: #831843;
+        font-style: italic;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .btn-primary-routed {
+        background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-primary-routed:hover {
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
+        transform: translateY(-2px);
+    }
+    .btn-secondary-routed {
+        background: white;
+        color: #be185d;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #fbcfe8;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-secondary-routed:hover {
+        background: #ffe4e6;
+    }
+    .info-box {
+        background: #fcf3ff;
+        border-left: 4px solid #d946ef;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        text-align: left;
+    }
+    .info-title {
+        font-weight: 600;
+        color: #7e22ce;
+        margin-bottom: 0.5rem;
+    }
+    .info-text {
+        color: #6b21a8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    .support-features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    .feature-box {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .feature-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .feature-text {
+        font-size: 0.85rem;
+        color: #4b5563;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="routed-container">
+    <div class="routed-icon">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+    </div>
+
+    <div class="routed-card">
+        <h2 class="routed-title">Escalated to Our Support Team</h2>
+        <p class="routed-subtitle">No worries! A support specialist will help you resolve this.</p>
+
+        <!-- Ticket Info -->
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+                <div style="text-align: left">
+                    <small style="color: #64748b">Ticket #{{ ticket.id }}</small>
+                    <h5 style="margin: 0.25rem 0; color: #0f172a">{{ ticket.title }}</h5>
+                </div>
+                <span style="background: #ffe4e6; color: #831843; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600">Escalated</span>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        {% if ticket.ai_feedback_text %}
+        <div class="feedback-section">
+            <div class="feedback-label">
+                <i class="bi bi-chat-left-text me-1"></i>Your Note to Support
+            </div>
+            <div class="feedback-text">
+                "{{ ticket.ai_feedback_text }}"
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- What Happens Next -->
+        <div class="info-box">
+            <div class="info-title">
+                <i class="bi bi-info-circle-fill me-1"></i>What Happens Next?
+            </div>
+            <div class="info-text">
+                Our support team will review your ticket and contact you within 2-4 business hours with a solution. Your original ticket information and any notes you provided will help us assist you faster.
+            </div>
+        </div>
+
+        <!-- Support Features -->
+        <div class="support-features">
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="bi bi-headset" style="color: #d946ef"></i>
+                </div>
+                <div class="feature-text">
+                    Expert Support Team
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="bi bi-chat-dots" style="color: #d946ef"></i>
+                </div>
+                <div class="feature-text">
+                    Direct Communication
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="bi bi-clock-history" style="color: #d946ef"></i>
+                </div>
+                <div class="feature-text">
+                    Fast Response Times
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="bi bi-check-circle" style="color: #d946ef"></i>
+                </div>
+                <div class="feature-text">
+                    Guaranteed Resolution
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div style="background: #ffe4e6; border: 1px solid #fbcfe8; border-radius: 8px; padding: 1rem; margin: 1.5rem 0; color: #831843">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Ticket Status:</strong> Your case is now in our support queue and will be handled with priority.
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'dashboard_home' %}" class="btn-primary-routed">
+                <i class="bi bi-speedometer2"></i>View Dashboard
+            </a>
+            <a href="{% url 'support_list' %}" class="btn-secondary-routed">
+                <i class="bi bi-arrow-up"></i>Track in Support Board
+            </a>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div style="text-align: center; color: #64748b; font-size: 0.9rem">
+        <p>
+            <i class="bi bi-patch-question-fill me-1" style="color: #7e22ce"></i>
+            Need help before support reaches out? Check our <a href="#" style="color: #7e22ce; font-weight: 600">help center</a> or visit our <a href="#" style="color: #7e22ce; font-weight: 600">knowledge base</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

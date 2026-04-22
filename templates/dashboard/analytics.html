@@ -1,5 +1,5 @@
 {% extends 'tickets/base.html' %}
-{% block title %}Admin Dashboard - IT Service Desk{% endblock %}
+{% block title %}Analytics Dashboard - IT Service Desk{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -28,7 +28,6 @@
     }
     .analytics-header > * { position: relative; z-index: 2; }
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-30px); } }
-    @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
     
     .analytics-header h4 {
         color: #00f5ff;
@@ -129,17 +128,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid" style="max-width: 1400px; margin: 0 auto; padding: 0 15px;">
-
 <!-- Page Header -->
 <div class="analytics-header d-flex align-items-center justify-content-between">
     <div>
         <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem">
-            <h4 class="mb-0 fw-bold" style="font-size:2.2rem">Admin Dashboard</h4>
+            <h4 class="mb-0 fw-bold" style="font-size:2.2rem">Advanced Analytics</h4>
             <span style="background:linear-gradient(135deg,#ff6b9d,#ffc107);color:#fff;padding:0.4rem 1rem;border-radius:50px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Admin Only</span>
         </div>
         <p class="mb-0" style="font-size:0.95rem;opacity:0.9">System-wide intelligence: ticket trends, resolution rates, AI effectiveness, and user performance</p>
     </div>
+    <a href="{% url 'dashboard_home' %}" class="btn" style="background: linear-gradient(90deg, rgba(0, 217, 255, 0.2), rgba(0, 245, 255, 0.1)); border: 1px solid rgba(0, 217, 255, 0.3); color: #00f5ff; border-radius: 8px; font-weight: 700; padding: 0.75rem 1.5rem; transition: all 0.3s ease;">
+        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+    </a>
 </div>
 
 <!-- System Health Score -->
@@ -435,7 +435,6 @@
     </div>
 </div>
 
-</div><!-- end container -->
 {% endblock %}
 
 {% block extra_js %}

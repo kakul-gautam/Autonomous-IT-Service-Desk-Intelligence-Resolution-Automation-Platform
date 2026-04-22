@@ -4,53 +4,148 @@
 {% block extra_css %}
 <style>
     .result-header {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e3a5f 100%);
         border-radius: 14px;
-        padding: 1.75rem 2rem;
+        padding: 2.5rem 2rem;
         color: #fff;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.3);
+    }
+    .result-header h4 {
+        font-size: 1.8rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.5px;
     }
     .tid-pill {
-        background: rgba(37,99,235,0.25);
+        background: rgba(59, 130, 246, 0.3);
         color: #93c5fd;
-        border: 1px solid rgba(96,165,250,0.3);
+        border: 1px solid rgba(96, 165, 250, 0.5);
         border-radius: 20px;
-        padding: 0.25rem 0.85rem;
-        font-size: 0.82rem;
+        padding: 0.35rem 1rem;
+        font-size: 0.85rem;
         font-weight: 700;
         display: inline-block;
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.75rem;
     }
     .meta-pill {
-        display: inline-flex; align-items: center; gap: 5px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 6px;
-        padding: 0.3rem 0.7rem;
-        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 8px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.87rem;
         color: #cbd5e1;
-        margin: 4px 4px 0 0;
+        margin: 6px 6px 0 0;
+        border: 1px solid rgba(255,255,255,0.1);
     }
-    .conf-bar-bg { background: #e2e8f0; border-radius: 99px; height: 10px; overflow: hidden; }
-    .conf-bar    { height: 100%; border-radius: 99px; }
-    .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem; }
-    .similar-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-bottom: 0.85rem; transition: box-shadow 0.2s; }
-    .similar-card:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.1); }
-    .how-item { display: flex; gap: 0.75rem; margin-bottom: 0.85rem; }
-    .how-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
-    .how-text h6 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.1rem; }
-    .how-text p  { font-size: 0.8rem; color: #64748b; margin: 0; }
+    .solution-box { 
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); 
+        border: 2px solid #86efac; 
+        border-radius: 12px; 
+        padding: 1.5rem;
+        line-height: 1.8;
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+    .conf-bar-bg { background: #e2e8f0; border-radius: 99px; height: 12px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+    .conf-bar { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+    .ai-card {
+        background: linear-gradient(135deg, #f0f4f8 0%, #f9fafb 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .ai-card h6 {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.75rem;
+    }
+    .similar-card { 
+        background: white;
+        border: 1px solid #e5e7eb; 
+        border-radius: 12px; 
+        padding: 1.25rem; 
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .similar-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, #2563eb, #0ea5e9);
+    }
+    .similar-card:hover {
+        box-shadow: 0 6px 20px rgba(37,99,235,0.15);
+        border-color: #bfdbfe;
+        transform: translateY(-2px);
+    }
+    .action-button {
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.65rem 1.25rem;
+        transition: all 0.3s ease;
+    }
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .feedback-input {
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .feedback-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1f2937;
+    }
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        font-weight: 600;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Result header -->
 <div class="result-header">
-    <div class="tid-pill">#{{ ticket.id }}</div>
-    <h4 style="font-weight:700;margin-bottom:0.5rem">{{ ticket.title }}</h4>
-    <div>
+    <div class="tid-pill">#{{ ticket.id }} • Created {{ ticket.created_at|date:"M d, Y" }}</div>
+    <h4>{{ ticket.title }}</h4>
+    <div style="opacity:0.9">
         <span class="meta-pill"><i class="bi bi-tag-fill"></i>{{ ticket.category }}</span>
-        <span class="meta-pill"><i class="bi bi-exclamation-circle-fill"></i>{{ ticket.priority }}</span>
-        <span class="meta-pill"><i class="bi bi-person"></i>{{ ticket.owner.username }}</span>
+        <span class="meta-pill"><i class="bi bi-exclamation-circle-fill"></i>{{ ticket.priority }} Priority</span>
+        <span class="meta-pill"><i class="bi bi-person-circle"></i>{{ ticket.owner.get_full_name|default:ticket.owner.username }}</span>
     </div>
 </div>
 
@@ -58,183 +153,216 @@
     <!-- Main column -->
     <div class="col-lg-8">
 
-        <!-- Suggested solution -->
-        <div class="card mb-4">
-            <div class="card-header"
-                 style="background:#f0fdf4;border-bottom:1px solid #bbf7d0">
-                <h6 class="mb-0 fw-bold" style="color:#15803d">
-                    <i class="bi bi-lightbulb-fill me-2"></i>Suggested Resolution
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="solution-box">
-                    <p class="mb-0" style="font-size:0.95rem;line-height:1.7">
-                        {{ ticket.suggested_solution }}
-                    </p>
+        <!-- SUGGESTED SOLUTION -->
+        <div class="ai-card">
+            <div style="display:flex;align-items:center;margin-bottom:1rem">
+                <div style="width:40px;height:40px;border-radius:10px;background:#16a34a;display:flex;align-items:center;justify-content:center;color:white;margin-right:0.75rem">
+                    <i class="bi bi-lightbulb-fill" style="font-size:1.3rem"></i>
                 </div>
+                <h6 style="margin:0">AI-Recommended Solution</h6>
+            </div>
+            <div class="solution-box">
+                <p class="mb-0">
+                    {{ ticket.suggested_solution }}
+                </p>
             </div>
         </div>
 
-        <!-- AI confidence -->
-        {% if ml_confidence %}
-        <div class="card mb-4">
-            <div class="card-header" style="background:#f8fafc">
-                <h6 class="mb-0 fw-bold">
-                    <i class="bi bi-robot me-2 text-primary"></i>AI Classification Confidence
-                </h6>
+        <!-- SOLUTION FEEDBACK SECTION -->
+        <div class="ai-card">
+            <div style="display:flex;align-items:center;margin-bottom:1rem">
+                <div style="width:40px;height:40px;border-radius:10px;background:#2563eb;display:flex;align-items:center;justify-content:center;color:white;margin-right:0.75rem">
+                    <i class="bi bi-hand-thumbs-up-fill" style="font-size:1.3rem"></i>
+                </div>
+                <h6 style="margin:0">Rate This Solution</h6>
             </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span style="font-size:0.88rem;color:#64748b">ML Model Confidence</span>
-                    <span class="fw-bold" style="font-size:1.1rem;
-                        color:{% if ml_confidence >= 0.7 %}#16a34a{% elif ml_confidence >= 0.5 %}#d97706{% else %}#dc2626{% endif %}">
-                        {{ ml_confidence_pct }}%
-                    </span>
-                </div>
-                <div class="conf-bar-bg mb-3">
-                    <div class="conf-bar" style="width:{{ ml_confidence_pct }}%;
-                        background:{% if ml_confidence >= 0.7 %}#16a34a{% elif ml_confidence >= 0.5 %}#f59e0b{% else %}#ef4444{% endif %}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <!-- Helpful Button -->
+                <form method="post" action="{% url 'mark_ai_helpful' ticket.id %}">
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-2">
+                        <input type="text" name="feedback" class="feedback-input" placeholder="What was helpful? (optional)" style="width:100%">
+                        <button type="submit" class="action-button btn btn-success w-100">
+                            <i class="bi bi-check-circle me-2"></i>Yes, This Helped!
+                        </button>
                     </div>
+                </form>
+                <!-- Not Helpful Button -->
+                <form method="post" action="{% url 'mark_ai_unhelpful' ticket.id %}">
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-2">
+                        <input type="text" name="feedback" class="feedback-input" placeholder="What else did you need?" style="width:100%">
+                        <button type="submit" class="action-button btn btn-warning w-100">
+                            <i class="bi bi-question-circle me-2"></i>Need More Help
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <p class="text-muted mt-3 mb-0" style="font-size:0.8rem">
+                <i class="bi bi-info-circle me-1"></i> Your feedback helps improve AI recommendations for everyone
+            </p>
+        </div>
+
+        <!-- AI METRICS & CONFIDENCE -->
+        {% if ml_confidence is not None or confidence_score is not None %}
+        <div class="ai-card">
+            <div style="display:flex;align-items:center;margin-bottom:1.5rem">
+                <div style="width:40px;height:40px;border-radius:10px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;color:white;margin-right:0.75rem">
+                    <i class="bi bi-graph-up" style="font-size:1.3rem"></i>
                 </div>
-                <div class="d-flex align-items-center gap-2" style="font-size:0.85rem">
-                    {% if ml_confidence >= 0.8 %}
-                    <i class="bi bi-check-circle-fill text-success"></i>
-                    <span class="text-success fw-bold">High confidence</span> — ML model is very certain
-                    {% elif ml_confidence >= 0.6 %}
-                    <i class="bi bi-info-circle-fill text-primary"></i>
-                    <span class="text-primary fw-bold">Medium confidence</span> — prediction is reasonable
-                    {% elif ml_confidence >= 0.5 %}
-                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                    <span class="text-warning fw-bold">Low-medium confidence</span> — borderline prediction
-                    {% else %}
-                    <i class="bi bi-x-circle-fill text-danger"></i>
-                    <span class="text-danger fw-bold">Low confidence</span> — may require manual review
-                    {% endif %}
+                <h6 style="margin:0">AI Intelligence Metrics</h6>
+            </div>
+
+            <div class="stat-grid">
+                {% if ml_confidence is not None %}
+                <div class="stat-item">
+                    <div class="stat-value" style="color:{% if ml_confidence >= 0.7 %}#16a34a{% elif ml_confidence >= 0.5 %}#d97706{% else %}#dc2626{% endif %}">
+                        {{ ml_confidence_pct }}%
+                    </div>
+                    <div class="stat-label">ML Confidence</div>
                 </div>
-                {% if was_overridden %}
-                <div class="mt-3 p-2" style="background:#fef3c7;border-radius:8px;font-size:0.82rem">
-                    <i class="bi bi-shield-fill-check me-1" style="color:#d97706"></i>
-                    <strong>Safety override applied</strong> — keyword rules corrected the ML prediction.
+                {% endif %}
+                
+                {% if confidence_score is not None %}
+                <div class="stat-item">
+                    <div class="stat-value" style="color:#2563eb">
+                        {{ confidence_score }}%
+                    </div>
+                    <div class="stat-label">Automation Score</div>
+                </div>
+                {% endif %}
+
+                {% if similar_tickets %}
+                <div class="stat-item">
+                    <div class="stat-value" style="color:#0ea5e9">
+                        {{ similar_tickets|length }}
+                    </div>
+                    <div class="stat-label">Similar Cases</div>
                 </div>
                 {% endif %}
             </div>
-        </div>
-        {% endif %}
 
-        <!-- Automation confidence -->
-        {% if confidence_score is not None %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="fw-bold mb-1">
-                            <i class="bi bi-graph-up me-2 text-primary"></i>Automation Confidence
-                        </h6>
-                        <p class="mb-0" style="font-size:0.87rem;color:#64748b">
-                            Based on {{ similar_tickets|length }} similar case(s) in knowledge base
-                        </p>
-                    </div>
-                    <div class="text-end">
-                        <div style="font-size:1.8rem;font-weight:800;color:#2563eb">
-                            {{ confidence_score }}%
-                        </div>
-                    </div>
+            {% if ml_confidence is not None %}
+            <div style="margin-top:1.25rem">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                    <span style="font-size:0.87rem;font-weight:600;color:#4b5563">Model Confidence</span>
+                    <span style="font-size:0.87rem;font-weight:600;color:{% if ml_confidence >= 0.7 %}#16a34a{% elif ml_confidence >= 0.5 %}#d97706{% else %}#dc2626{% endif %}">
+                        {% if ml_confidence >= 0.8 %}
+                        ✓ High Confidence
+                        {% elif ml_confidence >= 0.6 %}
+                        ⚡ Medium Confidence
+                        {% elif ml_confidence >= 0.5 %}
+                        ⚠ Low-Medium Confidence
+                        {% else %}
+                        ✗ Low Confidence
+                        {% endif %}
+                    </span>
                 </div>
+                <div class="conf-bar-bg">
+                    <div class="conf-bar" style="width:{{ ml_confidence_pct }}%;background:{% if ml_confidence >= 0.7 %}#16a34a{% elif ml_confidence >= 0.5 %}#f59e0b{% else %}#ef4444{% endif %}"></div>
+                </div>
+                
+                {% if was_overridden %}
+                <div class="mt-3" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:0.75rem;font-size:0.82rem">
+                    <i class="bi bi-shield-fill-check me-1" style="color:#d97706"></i>
+                    <strong style="color:#92400e">Safety Override Applied</strong> — AI prediction was adjusted using keyword-based rules
+                </div>
+                {% endif %}
             </div>
+            {% endif %}
         </div>
         {% endif %}
 
-        <!-- Similar tickets -->
+        <!-- SIMILAR RESOLVED TICKETS -->
         {% if similar_tickets %}
-        <div class="card">
-            <div class="card-header" style="background:#f8fafc">
-                <h6 class="mb-0 fw-bold">
-                    <i class="bi bi-files me-2 text-primary"></i>Similar Resolved Tickets
-                </h6>
+        <div class="ai-card">
+            <div style="display:flex;align-items:center;margin-bottom:1rem">
+                <div style="width:40px;height:40px;border-radius:10px;background:#06b6d4;display:flex;align-items:center;justify-content:center;color:white;margin-right:0.75rem">
+                    <i class="bi bi-files" style="font-size:1.3rem"></i>
+                </div>
+                <h6 style="margin:0">Similar Resolved Cases</h6>
             </div>
-            <div class="card-body">
-                {% for similar, score in similar_tickets %}
-                <div class="similar-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="fw-bold mb-1" style="font-size:0.92rem">
-                                {{ similar.title }}
-                            </div>
-                            <div style="font-size:0.85rem;color:#64748b">
-                                {{ similar.suggested_solution|truncatewords:20 }}
-                            </div>
-                        </div>
-                        <div class="ms-3 text-end flex-shrink-0">
-                            <div style="font-size:1.1rem;font-weight:700;color:#2563eb">{{ score }}%</div>
-                            <div style="font-size:0.75rem;color:#94a3b8">match</div>
+            
+            {% for similar, score in similar_tickets %}
+            <div class="similar-card">
+                <div style="margin-left:8px">
+                    <div style="font-weight:600;color:#1f2937;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:start">
+                        <div style="flex:1">{{ similar.title }}</div>
+                        <div style="background:#dbeafe;color:#1e40af;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;margin-left:12px">
+                            {{ score }}% match
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <span class="badge"
-                              style="background:#e2e8f0;color:#374151;font-size:0.75rem">
-                            {{ similar.resolution_status }}
-                        </span>
+                    <div style="font-size:0.87rem;color:#6b7280;line-height:1.6">
+                        {{ similar.suggested_solution|truncatewords:25 }}
+                    </div>
+                    <div style="margin-top:0.75rem;font-size:0.8rem;color:#9ca3af">
+                        <i class="bi bi-calendar3 me-1"></i>{{ similar.created_at|timesince }} ago
                     </div>
                 </div>
-                {% endfor %}
             </div>
-        </div>
-        {% else %}
-        <div class="alert d-flex align-items-center gap-2"
-             style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;font-size:0.88rem">
-            <i class="bi bi-info-circle-fill" style="color:#d97706"></i>
-            No similar past cases found — this may be a novel issue type.
+            {% endfor %}
         </div>
         {% endif %}
+
     </div>
 
     <!-- Sidebar -->
     <div class="col-lg-4">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-info-circle me-2 text-primary"></i>How the AI Works
-                </h6>
-                <div class="how-item">
-                    <div class="how-icon" style="background:#eff6ff">
-                        <i class="bi bi-cpu" style="color:#2563eb"></i>
-                    </div>
-                    <div class="how-text">
-                        <h6>TF-IDF Analysis</h6>
-                        <p>Text vectorised and compared to 4,000 training examples.</p>
-                    </div>
+        <!-- Quick Details Card -->
+        <div class="ai-card" style="position:sticky;top:20px">
+            <h6 style="margin:0 0 1rem 0">📋 Ticket Details</h6>
+            <div style="border-bottom:1px solid #e5e7eb;padding-bottom:1rem;margin-bottom:1rem">
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.75rem;font-size:0.9rem">
+                    <span style="color:#6b7280">Status</span>
+                    <strong style="color:{% if ticket.resolution_status == 'Resolved' %}#16a34a{% elif ticket.resolution_status == 'Pending' %}#d97706{% else %}#dc2626{% endif %}">
+                        {% if ticket.resolution_status == 'Resolved' %}
+                        ✓ Resolved
+                        {% elif ticket.resolution_status == 'Pending' %}
+                        ⏳ Pending
+                        {% else %}
+                        Open
+                        {% endif %}
+                    </strong>
                 </div>
-                <div class="how-item">
-                    <div class="how-icon" style="background:#f0fdf4">
-                        <i class="bi bi-shield-check" style="color:#16a34a"></i>
-                    </div>
-                    <div class="how-text">
-                        <h6>Rule-Based Safety</h6>
-                        <p>Keyword rules correct low-confidence ML predictions.</p>
-                    </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.75rem;font-size:0.9rem">
+                    <span style="color:#6b7280">Category</span>
+                    <strong>{{ ticket.category }}</strong>
                 </div>
-                <div class="how-item">
-                    <div class="how-icon" style="background:#fdf4ff">
-                        <i class="bi bi-search" style="color:#9333ea"></i>
-                    </div>
-                    <div class="how-text">
-                        <h6>Case-Based Reasoning</h6>
-                        <p>Searches ticket history for similar proven resolutions.</p>
-                    </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.9rem">
+                    <span style="color:#6b7280">Priority</span>
+                    <strong style="color:{% if ticket.priority == 'High' %}#dc2626{% elif ticket.priority == 'Medium' %}#d97706{% else %}#16a34a{% endif %}">
+                        {{ ticket.priority }}
+                    </strong>
                 </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <h6 style="margin:0 0 0.75rem 0;font-size:0.85rem;color:#6b7280;text-transform:uppercase">Problem Description</h6>
+                <p style="font-size:0.87rem;color:#4b5563;line-height:1.6;margin:0">
+                    {{ ticket.description }}
+                </p>
+            </div>
+
+            <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e5e7eb">
+                <a href="{% url 'ticket_detail' ticket.id %}" class="btn btn-outline-primary w-100" style="border-radius:8px">
+                    <i class="bi bi-arrow-right me-2"></i>View Full Details
+                </a>
             </div>
         </div>
 
-        <a href="{% url 'dashboard_home' %}"
-           class="btn btn-primary w-100 mb-2"
-           style="border-radius:8px;font-weight:600">
-            <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
-        </a>
-        <a href="{% url 'create_ticket' %}"
-           class="btn btn-outline-primary w-100"
-           style="border-radius:8px;font-weight:600">
-            <i class="bi bi-plus-circle me-2"></i>Submit Another Ticket
-        </a>
+        <!-- Tip Card -->
+        <div class="ai-card" style="background:linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);border:1px solid #fde68a">
+            <div style="display:flex;align-items:start;gap:0.75rem">
+                <i class="bi bi-lightbulb" style="color:#d97706;font-size:1.25rem;margin-top:2px;flex-shrink:0"></i>
+                <div style="font-size:0.85rem">
+                    <strong style="color:#92400e">💡 Pro Tip</strong>
+                    <p style="margin:0.5rem 0 0 0;color:#825a00;line-height:1.5">
+                        If this suggestion didn't fully resolve your issue, provide feedback so our AI can learn from your experience.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

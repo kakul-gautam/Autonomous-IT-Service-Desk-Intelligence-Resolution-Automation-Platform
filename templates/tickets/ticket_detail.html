@@ -1,0 +1,543 @@
+{% extends 'tickets/base.html' %}
+{% block title %}Ticket #{{ ticket.id }} - {{ ticket.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #0f1419 0%, rgba(0, 217, 255, 0.1) 100%);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        color: #e0e0e0;
+        margin-bottom: 2rem;
+        box-shadow: 0 0 60px rgba(0, 217, 255, 0.15);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    .detail-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(0, 217, 255, 0.1), transparent);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    .detail-header > * { position: relative; z-index: 2; }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+    
+    .tid-pill {
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 245, 255, 0.1));
+        color: #00f5ff;
+        border: 1px solid rgba(0, 217, 255, 0.5);
+        border-radius: 20px;
+        padding: 0.35rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.12), rgba(0, 245, 255, 0.06));
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.82rem;
+        color: #00f5ff;
+        margin: 6px 6px 0 0;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .meta-pill:hover {
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 245, 255, 0.12));
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.25);
+    }
+    .detail-header h3 {
+        color: #00f5ff;
+        font-weight: 900;
+        font-size: 1.8rem;
+        margin: 0.75rem 0 0 0;
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+    }
+    
+    .ai-solution-card {
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(0, 245, 255, 0.04));
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 14px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 0 40px rgba(0, 217, 255, 0.12);
+        backdrop-filter: blur(10px);
+    }
+    .ai-solution-title {
+        color: #00f5ff;
+        font-weight: 900;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .ai-solution-title i {
+        color: #00d9ff;
+        text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+    }
+    .solution-text {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: #e0e0e0;
+        margin-bottom: 1.5rem;
+    }
+    .action-button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .action-button {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.9rem 1.5rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .btn-resolved {
+        background: linear-gradient(90deg, #1edfa7, #00ffa3);
+        color: #0f1419;
+        box-shadow: 0 0 30px rgba(30, 223, 167, 0.3);
+    }
+    .btn-resolved:hover {
+        box-shadow: 0 0 50px rgba(30, 223, 167, 0.5);
+        transform: translateY(-2px);
+    }
+    .btn-need-help {
+        background: linear-gradient(90deg, #ff6b9d, #ff8fab);
+        color: #0f1419;
+        box-shadow: 0 0 30px rgba(255, 107, 157, 0.3);
+    }
+    .btn-need-help:hover {
+        box-shadow: 0 0 50px rgba(255, 107, 157, 0.5);
+        transform: translateY(-2px);
+    }
+    .feedback-form {
+        background: rgba(26, 31, 40, 0.8);
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    .feedback-form textarea {
+        width: 100%;
+        padding: 0.85rem;
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        background: rgba(15, 20, 25, 0.8);
+        color: #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.3s ease;
+    }
+    .feedback-form textarea::placeholder {
+        color: #666666;
+    }
+    .feedback-form textarea:focus {
+        outline: none;
+        border-color: #00d9ff;
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        background: rgba(15, 20, 25, 0.95);
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-top: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-resolved {
+        background: linear-gradient(135deg, rgba(30, 223, 167, 0.2), rgba(0, 255, 163, 0.1));
+        color: #1edfa7;
+        border: 1px solid rgba(30, 223, 167, 0.4);
+    }
+    .status-pending {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 235, 59, 0.1));
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.4);
+    }
+    .comments-section {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(26, 31, 40, 0.8), rgba(15, 20, 25, 0.95));
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 14px;
+        box-shadow: 0 0 40px rgba(0, 217, 255, 0.08);
+    }
+    .comments-header {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: #00f5ff;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 1.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .comment-card {
+        background: rgba(26, 31, 40, 0.7);
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    .comment-card:hover {
+        background: rgba(26, 31, 40, 0.9);
+        border-color: rgba(0, 217, 255, 0.35);
+        box-shadow: 0 0 25px rgba(0, 217, 255, 0.1);
+        transform: translateX(5px);
+    }
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+    .comment-author {
+        font-weight: 700;
+        color: #00f5ff;
+        font-size: 0.95rem;
+    }
+    .comment-time {
+        font-size: 0.78rem;
+        color: #999999;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .comment-text {
+        color: #e0e0e0;
+        line-height: 1.6;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+    }
+    .comment-delete {
+        font-size: 0.8rem;
+        cursor: pointer;
+        color: #ff6b9d;
+        border: none;
+        background: none;
+        padding: 0;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .comment-delete:hover {
+        color: #ff8fab;
+        text-decoration: underline;
+    }
+    .add-comment-form {
+        background: rgba(26, 31, 40, 0.9);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    .add-comment-form label {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #00f5ff;
+        margin-bottom: 0.8rem;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .add-comment-form textarea {
+        width: 100%;
+        padding: 0.85rem;
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        background: rgba(15, 20, 25, 0.8);
+        color: #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 110px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    .add-comment-form textarea::placeholder {
+        color: #666666;
+    }
+    .add-comment-form textarea:focus {
+        outline: none;
+        border-color: #00d9ff;
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        background: rgba(15, 20, 25, 0.95);
+    }
+    .add-comment-btn {
+        background: linear-gradient(90deg, #00d9ff, #00f5ff);
+        color: #0f1419;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+    }
+    .add-comment-btn:hover {
+        box-shadow: 0 0 40px rgba(0, 217, 255, 0.5);
+        transform: translateY(-2px);
+    }
+    .no-comments {
+        color: #999999;
+        font-size: 0.95rem;
+        padding: 2rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex align-items-center gap-2">
+    <a href="{% url 'dashboard_home' %}" class="btn" style="background: linear-gradient(90deg, rgba(0, 217, 255, 0.2), rgba(0, 245, 255, 0.1)); border: 1px solid rgba(0, 217, 255, 0.3); color: #00f5ff; font-weight: 700; border-radius: 8px; padding: 0.6rem 1.2rem; transition: all 0.3s ease;">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<!-- Header -->
+<div class="detail-header">
+    <div class="tid-pill">#{{ ticket.id }}</div>
+    <h3 style="font-weight:700;margin:0.5rem 0">{{ ticket.title }}</h3>
+    <div>
+        <span class="meta-pill"><i class="bi bi-tag-fill"></i>{{ ticket.category }}</span>
+        <span class="meta-pill"><i class="bi bi-exclamation-circle-fill"></i>{{ ticket.priority }}</span>
+        <span class="meta-pill"><i class="bi bi-calendar3"></i>{{ ticket.created_at|date:"M d, Y" }}</span>
+        {% if ticket.resolution_status == 'Resolved' %}
+        <span class="status-badge status-resolved">✓ Resolved</span>
+        {% else %}
+        <span class="status-badge status-pending">⏳ Pending</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main content -->
+    <div class="col-lg-8">
+        <!-- Ticket Description -->
+        <div class="card mb-4" style="background: rgba(26, 31, 40, 0.8); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 14px; box-shadow: 0 0 30px rgba(0, 217, 255, 0.08);">
+            <div class="card-header" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 245, 255, 0.05)); border-bottom: 1px solid rgba(0, 217, 255, 0.2); border-radius: 14px 14px 0 0;">
+                <h6 class="mb-0 fw-bold" style="color: #00f5ff; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-card-text me-2" style="color: #00d9ff;"></i>Issue Description
+                </h6>
+            </div>
+            <div class="card-body" style="padding: 1.75rem;">
+                <p style="font-size:0.95rem;line-height:1.8;color:#e0e0e0">{{ ticket.description }}</p>
+            </div>
+        </div>
+
+        <!-- AI Solution Section -->
+        {% if ticket.suggested_solution %}
+        <div class="ai-solution-card">
+            <h5 class="ai-solution-title">
+                <i class="bi bi-lightbulb-fill"></i>AI Suggested Solution
+            </h5>
+            <p class="solution-text">{{ ticket.suggested_solution }}</p>
+            
+            <!-- Action Buttons - Only show if user hasn't already acted on suggestion -->
+            {% if ai_solution_pending %}
+            <div class="feedback-form">
+                <label for="feedbackText" style="font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.5rem;display:block">
+                    Did this solution help? (Optional feedback)
+                </label>
+                <textarea id="feedbackText" placeholder="Tell us if this solution resolved your issue or what additional help you need..." style="margin-bottom:0.75rem"></textarea>
+                
+                <div class="action-button-group">
+                    <button class="action-button btn-resolved" onclick="markResolved()">
+                        <i class="bi bi-check-circle"></i>Yes, This Resolved It!
+                    </button>
+                    <button class="action-button btn-need-help" onclick="markNeedsHelp()">
+                        <i class="bi bi-question-circle"></i>I Still Need Help
+                    </button>
+                </div>
+            </div>
+            {% elif ai_was_helpful == True %}
+            <div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:1rem">
+                <div style="display:flex;gap:0.5rem;align-items:flex-start">
+                    <i class="bi bi-check-circle-fill" style="color:#16a34a;margin-top:2px"></i>
+                    <div style="font-size:0.9rem">
+                        <strong style="color:#166534">Marked as Resolved</strong>
+                        <p style="color:#166534;margin:0.25rem 0 0 0">Thank you for the feedback! We've logged your resolution.</p>
+                        {% if ticket.ai_feedback_text %}
+                        <p style="color:#166534;margin:0.5rem 0 0 0;font-size:0.85rem;font-style:italic">Your note: {{ ticket.ai_feedback_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% elif ai_was_helpful == False %}
+            <div style="background:#fed7aa;border:1px solid #fdba74;border-radius:8px;padding:1rem">
+                <div style="display:flex;gap:0.5rem;align-items:flex-start">
+                    <i class="bi bi-exclamation-circle-fill" style="color:#ea580c;margin-top:2px"></i>
+                    <div style="font-size:0.9rem">
+                        <strong style="color:#9a3412">Escalated to Support</strong>
+                        <p style="color:#9a3412;margin:0.25rem 0 0 0">We've routed your case to our support team for further assistance.</p>
+                        {% if ticket.ai_feedback_text %}
+                        <p style="color:#9a3412;margin:0.5rem 0 0 0;font-size:0.85rem;font-style:italic">You mentioned: {{ ticket.ai_feedback_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h5 class="comments-header">
+                <i class="bi bi-chat-dots-fill"></i>Comments ({{ ticket.comments.count }})
+            </h5>
+            
+            <!-- Existing Comments -->
+            {% if ticket.comments.all %}
+                {% for comment in ticket.comments.all %}
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div>
+                            <span class="comment-author">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+                            <span class="comment-time">{{ comment.created_at|date:"M d, Y \a\t g:i A" }}</span>
+                        </div>
+                        {% if comment.author == user %}
+                        <form method="post" action="{% url 'delete_comment' comment.id %}" style="display:inline" onsubmit="return confirm('Delete this comment?');">
+                            {% csrf_token %}
+                            <button type="submit" class="comment-delete">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <p class="comment-text">{{ comment.text }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p class="no-comments">No comments yet. Be the first to add one!</p>
+            {% endif %}
+            
+            <!-- Add Comment Form -->
+            <form method="post" action="{% url 'add_comment' ticket.id %}" class="add-comment-form">
+                {% csrf_token %}
+                <label for="commentText">Add a Comment</label>
+                <textarea name="text" id="commentText" placeholder="Share your thoughts or additional details..." required></textarea>
+                <button type="submit" class="add-comment-btn">
+                    <i class="bi bi-reply-fill"></i>Post Comment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Ticket Info Card -->
+        <div class="card mb-4" style="background: rgba(26, 31, 40, 0.8); border: 1px solid rgba(0, 217, 255, 0.2); border-radius: 14px; box-shadow: 0 0 30px rgba(0, 217, 255, 0.08);">
+            <div class="card-header" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 245, 255, 0.05)); border-bottom: 1px solid rgba(0, 217, 255, 0.2); border-radius: 14px 14px 0 0;">
+                <h6 class="mb-0 fw-bold" style="color: #00f5ff; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-info-circle me-2" style="color: #00d9ff;"></i>Ticket Information
+                </h6>
+            </div>
+            <div class="card-body" style="padding: 1.75rem;">
+                <div class="mb-3">
+                    <small style="color: #999999; text-transform: uppercase; letter-spacing: 0.3px;">Status</small>
+                    <p class="mb-0 fw-bold" style="color: #e0e0e0; font-size: 1rem;">{{ ticket.resolution_status }}</p>
+                </div>
+                <div class="mb-3">
+                    <small style="color: #999999; text-transform: uppercase; letter-spacing: 0.3px;">Category</small>
+                    <p class="mb-0 fw-bold" style="color: #00f5ff;">{{ ticket.category }}</p>
+                </div>
+                <div class="mb-3">
+                    <small style="color: #999999; text-transform: uppercase; letter-spacing: 0.3px;">Priority</small>
+                    <p class="mb-0 fw-bold" style="color: #ffc107;">{{ ticket.priority }}</p>
+                </div>
+                <div>
+                    <small style="color: #999999; text-transform: uppercase; letter-spacing: 0.3px;">Created</small>
+                    <p class="mb-0 fw-bold" style="color: #e0e0e0;">{{ ticket.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Helpful Tips -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(0, 245, 255, 0.04)); border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 14px; box-shadow: 0 0 30px rgba(0, 217, 255, 0.1);">
+            <div class="card-header" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 245, 255, 0.08)); border-bottom: 1px solid rgba(0, 217, 255, 0.2); border-radius: 14px 14px 0 0;">
+                <h6 class="mb-0 fw-bold" style="color: #00f5ff; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-lightbulb me-2" style="color: #ffc107; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);"></i>Tips & Tricks
+                </h6>
+            </div>
+            <div class="card-body" style="font-size:0.85rem; padding: 1.75rem;">
+                <ul class="list-unstyled" style="color:#e0e0e0">
+                    <li class="mb-2" style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                        <span style="color: #1edfa7; font-weight: 700;">✓</span>
+                        <span>Try the suggested solution first</span>
+                    </li>
+                    <li class="mb-2" style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                        <span style="color: #1edfa7; font-weight: 700;">✓</span>
+                        <span>Let us know if it helped or what else you need</span>
+                    </li>
+                    <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                        <span style="color: #1edfa7; font-weight: 700;">✓</span>
+                        <span>Our support team is ready if you need more help</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for submitting feedback -->
+<form id="resolvedForm" method="post" action="{% url 'mark_ai_helpful' ticket.id %}" style="display:none">
+    {% csrf_token %}
+    <input type="hidden" name="feedback" id="resolvedFeedback">
+</form>
+
+<form id="needHelpForm" method="post" action="{% url 'mark_ai_unhelpful' ticket.id %}" style="display:none">
+    {% csrf_token %}
+    <input type="hidden" name="feedback" id="needHelpFeedback">
+</form>
+
+<script>
+function markResolved() {
+    const feedback = document.getElementById('feedbackText').value;
+    document.getElementById('resolvedFeedback').value = feedback;
+    document.getElementById('resolvedForm').submit();
+}
+
+function markNeedsHelp() {
+    const feedback = document.getElementById('feedbackText').value;
+    document.getElementById('needHelpFeedback').value = feedback;
+    document.getElementById('needHelpForm').submit();
+}
+</script>
+{% endblock %}

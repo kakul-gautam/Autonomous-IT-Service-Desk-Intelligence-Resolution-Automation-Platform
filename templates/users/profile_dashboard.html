@@ -1,0 +1,204 @@
+{% extends 'tickets/base.html' %}
+{% block title %}Account Settings - IT Service Desk{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-card { border-radius: 12px; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+    .settings-card:hover { border-color: #bfdbfe; background: #f0f9ff; }
+    .settings-icon { font-size: 1.8rem; color: #2563eb; margin-right: 1rem; }
+    .info-block { padding: 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem; }
+    .stat-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #e0e7ff; color: #3730a3; border-radius: 8px; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="d-flex align-items-center justify-content-between mb-4 p-4"
+     style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:14px;color:#fff">
+    <div>
+        <h5 class="mb-1 fw-bold">Account Settings</h5>
+        <p class="mb-0" style="color:#94a3b8;font-size:0.88rem">Manage your profile and account preferences</p>
+    </div>
+    <a href="{% url 'dashboard_home' %}" class="btn btn-light btn-sm" style="border-radius:8px">
+        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Information -->
+    <div class="col-lg-6">
+        <div class="settings-card card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="bi bi-person-circle settings-icon"></i>
+                    <h6 class="mb-0">Profile Information</h6>
+                </div>
+                
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Username</small>
+                    <p class="mb-0" style="font-size:0.95rem">{{ user.username }}</p>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Email</small>
+                    <p class="mb-0" style="font-size:0.95rem">{{ user.email }}</p>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Full Name</small>
+                    <p class="mb-0" style="font-size:0.95rem">
+                        {% if user.get_full_name %}
+                            {{ user.get_full_name }}
+                        {% else %}
+                            <span style="color:#94a3b8">Not set</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Department</small>
+                    <p class="mb-0" style="font-size:0.95rem">
+                        {% if profile.department %}
+                            {{ profile.department }}
+                        {% else %}
+                            <span style="color:#94a3b8">Not specified</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <a href="{% url 'edit_profile' %}" class="btn btn-primary btn-sm w-100" style="border-radius:8px">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="col-lg-6">
+        <div class="settings-card card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="bi bi-shield-lock settings-icon"></i>
+                    <h6 class="mb-0">Security</h6>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Account Type</small>
+                    <p class="mb-0">
+                        {% if user.is_staff or user.is_superuser %}
+                            <span class="stat-badge" style="background:#fee2e2;color:#991b1b">
+                                <i class="bi bi-shield-check"></i>Administrator
+                            </span>
+                        {% else %}
+                            <span class="stat-badge">
+                                <i class="bi bi-person"></i>Regular User
+                            </span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Member Since</small>
+                    <p class="mb-0" style="font-size:0.95rem">{{ user.date_joined|date:"F d, Y" }}</p>
+                </div>
+
+                <div class="info-block">
+                    <small style="color:#64748b;font-weight:600">Password</small>
+                    <p class="mb-0" style="font-size:0.95rem;color:#94a3b8">••••••••</p>
+                </div>
+
+                <a href="{% url 'change_password' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                    <i class="bi bi-key me-2"></i>Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Statistics -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="settings-card card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="bi bi-graph-up settings-icon"></i>
+                    <h6 class="mb-0">Your Statistics</h6>
+                </div>
+
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="info-block text-center">
+                            <div style="font-size:2rem;font-weight:700;color:#2563eb">{{ total_tickets }}</div>
+                            <small style="color:#64748b">Total Tickets</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-block text-center">
+                            <div style="font-size:2rem;font-weight:700;color:#16a34a">
+                                {% if total_tickets > 0 %}
+                                    {{ resolved_count }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                            <small style="color:#64748b">Resolved</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-block text-center">
+                            <div style="font-size:2rem;font-weight:700;color:#d97706">
+                                {% if total_tickets > 0 %}
+                                    {{ pending_count }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                            <small style="color:#64748b">Pending</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="settings-card card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-tools settings-icon"></i>
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                            <i class="bi bi-pencil me-2"></i>Update Profile Info
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'change_password' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'export_tickets' %}" class="btn btn-outline-success btn-sm w-100" style="border-radius:8px">
+                            <i class="bi bi-download me-2"></i>Export Tickets
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="post" action="{% url 'logout' %}" class="w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

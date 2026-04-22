@@ -1,333 +1,549 @@
 {% extends 'tickets/base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}AI-Powered IT Service Desk{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Hero */
-    .hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%);
-        color: #fff;
-        padding: 90px 0 80px;
-        position: relative;
-        overflow: hidden;
-    }
-    .hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-    .hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.15; }
-    .hero h1 span { color: #60a5fa; }
-    .hero p.lead { font-size: 1.1rem; color: #cbd5e1; max-width: 520px; }
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(37,99,235,0.2);
-        border: 1px solid rgba(96,165,250,0.3);
-        color: #93c5fd;
-        border-radius: 20px;
-        padding: 0.35rem 1rem;
-        font-size: 0.85rem;
-        margin-bottom: 1.5rem;
-    }
-    .terminal-card {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 16px;
-        padding: 1.75rem;
-        min-width: 280px;
-    }
-    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MODERN HOME PAGE - COMPLETE REDESIGN
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
-    /* Stats bar */
-    .stats-bar { background: #0f172a; padding: 50px 0; }
-    .stat-num { font-size: 2.6rem; font-weight: 800; color: #60a5fa; }
-    .stat-lbl { color: #94a3b8; font-size: 0.88rem; margin-top: 2px; }
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
 
-    /* Features */
-    .features-section { padding: 80px 0; background: #f8fafc; }
-    .feature-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 2rem;
-        height: 100%;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 14px 36px rgba(37,99,235,0.13); }
-    .feature-icon {
-        width: 52px; height: 52px;
-        border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1.1rem;
-    }
-    .feature-card h5 { font-weight: 700; font-size: 1rem; margin-bottom: 0.45rem; }
-    .feature-card p { color: #64748b; font-size: 0.87rem; margin: 0; line-height: 1.55; }
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.2), inset 0 0 10px rgba(0, 217, 255, 0.05); }
+    50% { box-shadow: 0 0 40px rgba(0, 217, 255, 0.4), inset 0 0 20px rgba(0, 217, 255, 0.1); }
+}
 
-    /* How it Works */
-    .hiw-section { padding: 80px 0; background: #fff; }
-    .step { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.75rem; }
-    .step-num {
-        min-width: 40px; height: 40px; border-radius: 50%;
-        background: #2563eb; color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 0.95rem; flex-shrink: 0;
-    }
-    .step-content h6 { font-weight: 700; margin-bottom: 0.2rem; font-size: 0.95rem; }
-    .step-content p { color: #64748b; font-size: 0.87rem; margin: 0; }
-    .cat-card {
-        display: flex; align-items: center; gap: 0.75rem;
-        padding: 0.85rem 1rem;
-        background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-    }
-    .cat-info .name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; }
-    .cat-info .sub  { font-size: 0.75rem; color: #94a3b8; }
+@keyframes slide-in-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    /* CTA */
-    .cta-section {
-        background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);
-        padding: 70px 0;
-        color: #fff;
-        text-align: center;
-    }
-    .cta-section h2 { font-size: 2.1rem; font-weight: 800; }
-    .cta-section p  { color: rgba(255,255,255,0.82); font-size: 1rem; }
+@keyframes shine {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+/* HERO SECTION */
+.hero-modern {
+    background: linear-gradient(135deg, #0f1419 0%, rgba(0, 217, 255, 0.08) 40%, rgba(30, 223, 167, 0.05) 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 140px 0 120px;
+}
+
+.hero-modern::before,
+.hero-modern::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.6;
+}
+
+.hero-modern::before {
+    width: 800px;
+    height: 800px;
+    top: -40%;
+    right: -10%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.2), transparent);
+    animation: float 8s ease-in-out infinite;
+}
+
+.hero-modern::after {
+    width: 600px;
+    height: 600px;
+    bottom: -20%;
+    left: -5%;
+    background: radial-gradient(circle, rgba(30, 223, 167, 0.15), transparent);
+    animation: float 10s ease-in-out infinite 1s;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-badge-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(30, 223, 167, 0.1));
+    border: 1.5px solid rgba(0, 217, 255, 0.4);
+    color: #00f5ff;
+    border-radius: 50px;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+    animation: slide-in-up 0.8s ease-out;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    animation: slide-in-up 0.8s ease-out 0.1s both;
+}
+
+.hero-title-highlight {
+    background: linear-gradient(120deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 60px rgba(0, 217, 255, 0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #a0f3ff;
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+    font-weight: 500;
+    animation: slide-in-up 0.8s ease-out 0.2s both;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1.5rem;
+    animation: slide-in-up 0.8s ease-out 0.3s both;
+    flex-wrap: wrap;
+}
+
+.hero-terminal {
+    background: rgba(15, 20, 25, 0.95);
+    border: 2px solid rgba(0, 217, 255, 0.3);
+    border-radius: 14px;
+    padding: 2rem;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 60px rgba(0, 217, 255, 0.2), inset 0 0 30px rgba(0, 217, 255, 0.05);
+    animation: glow-pulse 3s ease-in-out infinite, slide-in-up 0.8s ease-out 0.4s both;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.terminal-line {
+    margin-bottom: 0.6rem;
+    color: #a0f3ff;
+}
+
+.terminal-prompt { color: #00d9ff; margin-right: 0.5rem; }
+.terminal-success { color: #1edfa7; }
+.terminal-value { color: #ffc107; }
+
+/* STATS SHOWCASE */
+.stats-showcase {
+    background: linear-gradient(90deg, rgba(0, 217, 255, 0.05), rgba(30, 223, 167, 0.03));
+    padding: 80px 0;
+    border-top: 2px solid rgba(0, 217, 255, 0.2);
+    border-bottom: 2px solid rgba(0, 217, 255, 0.2);
+    position: relative;
+}
+
+.stat-showcase-item {
+    text-align: center;
+    padding: 2rem 1.5rem;
+}
+
+.stat-showcase-value {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+}
+
+.stat-showcase-label {
+    color: #999;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* FEATURES BENTO GRID */
+.features-modern {
+    padding: 120px 0;
+    background: #0f1419;
+}
+
+.features-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.features-title {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.features-subtitle {
+    color: #a0f3ff;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.feature-item {
+    background: linear-gradient(135deg, rgba(26, 31, 40, 0.95), rgba(15, 20, 25, 0.9));
+    border: 1.5px solid rgba(0, 217, 255, 0.25);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
+}
+
+.feature-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(0, 217, 255, 0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-12px);
+    border-color: rgba(0, 217, 255, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 217, 255, 0.2);
+}
+
+.feature-item:hover::before { opacity: 1; }
+
+.feature-icon-modern {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 217, 255, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0, 217, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+    transition: all 0.4s ease;
+}
+
+.feature-item:hover .feature-icon-modern {
+    transform: scale(1.15) rotate(10deg);
+    box-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
+}
+
+.feature-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #00f5ff;
+    margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 2;
+}
+
+.feature-desc {
+    color: #a0f3ff;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+    margin: 0;
+}
+
+/* HOW IT WORKS */
+.hiw-modern {
+    padding: 120px 0;
+    background: linear-gradient(180deg, #0f1419 0%, rgba(0, 217, 255, 0.02) 100%);
+}
+
+.hiw-title {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.hiw-subtitle {
+    color: #a0f3ff;
+    font-size: 1.05rem;
+    margin-bottom: 3rem;
+}
+
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+}
+
+.step-card {
+    background: linear-gradient(135deg, rgba(26, 31, 40, 0.9), rgba(15, 20, 25, 0.95));
+    border: 1.5px solid rgba(0, 217, 255, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 217, 255, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 217, 255, 0.15);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00f5ff, #00d9ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #0f1419;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+}
+
+.step-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #00f5ff;
+    margin-bottom: 0.8rem;
+}
+
+.step-desc {
+    color: #a0f3ff;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* CATEGORIES */
+.categories-modern {
+    padding: 120px 0;
+    background: #0f1419;
+}
+
+.categories-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+}
+
+.category-badge {
+    background: linear-gradient(135deg, rgba(26, 31, 40, 0.95), rgba(15, 20, 25, 0.95));
+    border: 1.5px solid rgba(0, 217, 255, 0.25);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.category-badge:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 217, 255, 0.5);
+    box-shadow: 0 15px 40px rgba(0, 217, 255, 0.2);
+}
+
+.category-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.category-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #00f5ff;
+    margin-bottom: 0.3rem;
+}
+
+.category-desc {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* CTA MODERN */
+.cta-modern {
+    background: linear-gradient(135deg,
+        rgba(0, 217, 255, 0.15) 0%,
+        rgba(0, 245, 255, 0.1) 50%,
+        rgba(30, 223, 167, 0.08) 100%);
+    border-top: 2px solid rgba(0, 217, 255, 0.3);
+    border-bottom: 2px solid rgba(0, 217, 255, 0.3);
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-modern::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.1), transparent);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: float 8s ease-in-out infinite;
+}
+
+.cta-content {
+    position: relative;
+    z-index: 2;
+}
+
+.cta-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00f5ff 0%, #00d9ff 50%, #1edfa7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.cta-subtitle {
+    color: #a0f3ff;
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .features-title { font-size: 2rem; }
+    .hiw-title { font-size: 2rem; }
+    .cta-title { font-size: 1.8rem; }
+    .hero-buttons { flex-direction: column; }
+}
 </style>
 {% endblock %}
 
 {% block main %}
-<!-- ========== HERO ========== -->
-<section class="hero">
-    <div class="container position-relative">
+<!-- HERO SECTION -->
+<section class="hero-modern">
+    <div class="container">
         <div class="row align-items-center gy-5">
-            <div class="col-lg-7">
-                <div class="hero-badge">
-                    <i class="bi bi-cpu-fill"></i>
-                    AI-Powered IT Support Platform
-                </div>
-                <h1>Resolve IT Issues<br><span>Faster with AI</span></h1>
-                <p class="lead mt-3 mb-4">
-                    Submit support tickets and get intelligent solutions instantly.
-                    Our ML model classifies, prioritises, and suggests resolutions automatically.
-                </p>
-                <div class="d-flex flex-wrap gap-3">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'create_ticket' %}" class="btn btn-primary btn-lg px-4">
-                        <i class="bi bi-plus-circle me-2"></i>New Ticket
-                    </a>
-                    <a href="{% url 'dashboard_home' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </a>
-                    {% else %}
-                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
-                        <i class="bi bi-person-plus me-2"></i>Get Started Free
-                    </a>
-                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
-                <div class="terminal-card w-100">
-                    <div class="d-flex align-items-center mb-3 gap-2">
-                        <div class="terminal-dot" style="background:#ef4444"></div>
-                        <div class="terminal-dot" style="background:#f59e0b"></div>
-                        <div class="terminal-dot" style="background:#10b981"></div>
-                        <span class="ms-2" style="color:#64748b;font-size:0.78rem">ai_inference.py</span>
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <div class="hero-badge-modern">
+                        <i class="bi bi-lightning-fill"></i>
+                        AI-POWERED IT SUPPORT
                     </div>
-                    <div style="font-family:monospace;font-size:0.83rem;color:#94a3b8;line-height:1.9">
-                        <div><span style="color:#60a5fa">▶</span> <span style="color:#f8fafc">Analysing issue description…</span></div>
-                        <div><span style="color:#34d399">✓</span> <span style="color:#f8fafc">Category:&nbsp;</span><span style="color:#fbbf24">Network</span></div>
-                        <div><span style="color:#34d399">✓</span> <span style="color:#f8fafc">Priority:&nbsp;</span><span style="color:#f87171">High</span></div>
-                        <div><span style="color:#34d399">✓</span> <span style="color:#f8fafc">Confidence:&nbsp;</span><span style="color:#34d399">92 %</span></div>
-                        <div style="margin-top:0.6rem;color:#cbd5e1">→ Suggested resolution ready</div>
+                    <h1 class="hero-title">
+                        IT That <span class="hero-title-highlight">Thinks</span> 
+                        <br>for You
+                    </h1>
+                    <p class="hero-subtitle">
+                        Submit support tickets and get intelligent solutions in seconds. Our hybrid AI engine analyzes your issue, determines priority, and recommends proven resolutions from 30,000+ enterprise IT cases.
+                    </p>
+                    <div class="hero-buttons">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'create_ticket' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>New Ticket
+                        </a>
+                        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Get Started Free
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- ========== STATS ========== -->
-<section class="stats-bar">
-    <div class="container">
-        <div class="row text-center g-4">
-            <div class="col-6 col-md-3">
-                <div class="stat-num">4,000+</div>
-                <div class="stat-lbl">Training Samples</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-num">5</div>
-                <div class="stat-lbl">Issue Categories</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-num">AI</div>
-                <div class="stat-lbl">Auto Classification</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-num">100%</div>
-                <div class="stat-lbl">Web-Based Portal</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ========== FEATURES ========== -->
-<section class="features-section">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 style="font-weight:800;font-size:2rem">Everything you need in one place</h2>
-            <p class="text-muted">A complete AI-powered IT support workflow — from submission to resolution.</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon" style="background:#eff6ff">
-                        <i class="bi bi-robot" style="color:#2563eb"></i>
+            <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+                <div class="hero-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dot" style="background: #ff6b6b;"></div>
+                        <div class="terminal-dot" style="background: #ffc107;"></div>
+                        <div class="terminal-dot" style="background: #1edfa7;"></div>
+                        <span style="color: #999; font-size: 0.75rem; margin-left: auto;">ai_inference.py</span>
                     </div>
-                    <h5>AI Classification</h5>
-                    <p>ML model automatically classifies your ticket into the right category with confidence scoring.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon" style="background:#f0fdf4">
-                        <i class="bi bi-lightning-fill" style="color:#16a34a"></i>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">▶</span>
+                        <span>Analyzing support ticket...</span>
                     </div>
-                    <h5>Instant Solutions</h5>
-                    <p>Get AI-suggested resolutions based on 4,000+ historical IT support cases immediately.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon" style="background:#fdf4ff">
-                        <i class="bi bi-speedometer2" style="color:#9333ea"></i>
+                    <div class="terminal-line" style="color: #1edfa7;">
+                        <span class="terminal-prompt">✓</span>
+                        <span>Category detected: <span class="terminal-value">Network</span></span>
                     </div>
-                    <h5>Live Dashboard</h5>
-                    <p>Role-based analytics dashboard with ticket stats, priority breakdowns, and Chart.js visuals.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon" style="background:#fff7ed">
-                        <i class="bi bi-shield-check" style="color:#ea580c"></i>
+                    <div class="terminal-line" style="color: #1edfa7;">
+                        <span class="terminal-prompt">✓</span>
+                        <span>Priority assigned: <span class="terminal-value">High</span></span>
                     </div>
-                    <h5>Secure Access</h5>
-                    <p>Role-based access control — admins see all tickets, users see only their own submissions.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ========== HOW IT WORKS ========== -->
-<section class="hiw-section">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-5">
-                <h2 style="font-weight:800;font-size:2rem">How it works</h2>
-                <p class="text-muted mb-4">From problem description to solution suggestion in seconds.</p>
-                <div class="step">
-                    <div class="step-num">1</div>
-                    <div class="step-content">
-                        <h6>Submit a Ticket</h6>
-                        <p>Describe your IT issue using the simple ticket form. Add as much detail as needed.</p>
+                    <div class="terminal-line" style="color: #1edfa7;">
+                        <span class="terminal-prompt">✓</span>
+                        <span>Confidence score: <span class="terminal-value">94%</span></span>
                     </div>
-                </div>
-                <div class="step">
-                    <div class="step-num">2</div>
-                    <div class="step-content">
-                        <h6>AI Analyses the Issue</h6>
-                        <p>Our TF-IDF + cosine similarity model classifies the ticket and assigns priority automatically.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-num">3</div>
-                    <div class="step-content">
-                        <h6>Get a Resolution</h6>
-                        <p>The system suggests a solution sourced from similar resolved tickets in the knowledge base.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-num">4</div>
-                    <div class="step-content">
-                        <h6>Track &amp; Close</h6>
-                        <p>Monitor ticket status on the dashboard and mark it resolved when fixed.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7">
-                <div class="card p-4" style="background:#f8fafc;border:1px solid #e2e8f0">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0 fw-bold">
-                            <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Supported Categories
-                        </h6>
-                        <span class="badge" style="background:#2563eb">5 Categories</span>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="cat-card">
-                                <i class="bi bi-laptop text-primary fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name">Hardware</div>
-                                    <div class="sub">Devices, peripherals</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="cat-card">
-                                <i class="bi bi-code-square text-success fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name">Software</div>
-                                    <div class="sub">Apps, installations</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="cat-card">
-                                <i class="bi bi-wifi" style="color:#d97706" class="fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name">Network</div>
-                                    <div class="sub">WiFi, VPN, connectivity</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="cat-card">
-                                <i class="bi bi-person-lock text-danger fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name">Account / Access</div>
-                                    <div class="sub">Login, passwords</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="cat-card">
-                                <i class="bi bi-hdd-stack" style="color:#7c3aed" class="fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name">Other IT Issues</div>
-                                    <div class="sub">General support</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="cat-card" style="border-style:dashed;background:transparent">
-                                <i class="bi bi-plus-circle text-muted fs-5"></i>
-                                <div class="cat-info">
-                                    <div class="name" style="color:#94a3b8">Auto-classified</div>
-                                    <div class="sub">By AI on submission</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="terminal-line" style="color: #1edfa7; margin-top: 0.8rem;">
+                        <span class="terminal-prompt">→</span>
+                        <span>Recommended solution ready</span>
                     </div>
                 </div>
             </div>
@@ -335,21 +551,152 @@
     </div>
 </section>
 
-<!-- ========== CTA ========== -->
-<section class="cta-section">
+<!-- STATS SHOWCASE -->
+<section class="stats-showcase">
     <div class="container">
-        <h2>Ready to get started?</h2>
-        <p class="mt-2 mb-4">Create an account and submit your first ticket in under 2 minutes.</p>
+        <div class="row">
+            <div class="col-6 col-md-3">
+                <div class="stat-showcase-item">
+                    <div class="stat-showcase-value">30,000+</div>
+                    <div class="stat-showcase-label">Training Samples</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-showcase-item">
+                    <div class="stat-showcase-value">5</div>
+                    <div class="stat-showcase-label">Issue Categories</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-showcase-item">
+                    <div class="stat-showcase-value">94%</div>
+                    <div class="stat-showcase-label">Accuracy Rate</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-showcase-item">
+                    <div class="stat-showcase-value">&lt;1sec</div>
+                    <div class="stat-showcase-label">Avg Resolution Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section class="features-modern">
+    <div class="container">
+        <div class="features-header">
+            <h2 class="features-title">Powerful Features</h2>
+            <p class="features-subtitle">Everything you need for intelligent IT support management</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon-modern">💡</div>
+                <h3 class="feature-title">AI Classification</h3>
+                <p class="feature-desc">Hybrid TF-IDF + Random Forest automatically categorizes issues with confidence scoring.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-modern">⚡</div>
+                <h3 class="feature-title">Instant Solutions</h3>
+                <p class="feature-desc">Get AI-recommended resolutions in real-time based on 30,000+ enterprise support cases.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-modern">📊</div>
+                <h3 class="feature-title">Smart Analytics</h3>
+                <p class="feature-desc">Role-based dashboard with real-time metrics, trends, and ML anomaly detection.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-modern">🔒</div>
+                <h3 class="feature-title">Enterprise Security</h3>
+                <p class="feature-desc">Role-based access control, audit logging, and compliance with enterprise standards.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS SECTION -->
+<section class="hiw-modern">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 class="hiw-title">How It Works</h2>
+            <p class="hiw-subtitle">From issue description to intelligent solution in seconds</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Submit Ticket</h3>
+                <p class="step-desc">Describe your IT issue with details. Include error codes and system information for better classification.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">AI Analyzes</h3>
+                <p class="step-desc">Our hybrid model classifies the issue, assigns priority, and searches for similar resolved cases instantly.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Get Solution</h3>
+                <p class="step-desc">Receive AI-recommended resolution with confidence scoring and links to similar case references.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Track & Resolve</h3>
+                <p class="step-desc">Monitor progress in your dashboard, provide feedback, and help improve our AI models over time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORIES SECTION -->
+<section class="categories-modern">
+    <div class="container">
+        <h2 class="categories-title">Issue Categories</h2>
+        <div class="categories-grid">
+            <div class="category-badge">
+                <div class="category-icon">💻</div>
+                <div class="category-name">Software</div>
+                <div class="category-desc">Apps, installations, crashes</div>
+            </div>
+            <div class="category-badge">
+                <div class="category-icon">🖥️</div>
+                <div class="category-name">Hardware</div>
+                <div class="category-desc">Devices, peripherals, displays</div>
+            </div>
+            <div class="category-badge">
+                <div class="category-icon">🌐</div>
+                <div class="category-name">Network</div>
+                <div class="category-desc">WiFi, connectivity, VPN</div>
+            </div>
+            <div class="category-badge">
+                <div class="category-icon">🔐</div>
+                <div class="category-name">Account</div>
+                <div class="category-desc">Login, passwords, access</div>
+            </div>
+            <div class="category-badge">
+                <div class="category-icon">❓</div>
+                <div class="category-name">Other</div>
+                <div class="category-desc">General IT support</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="cta-modern">
+    <div class="cta-content">
+        <h2 class="cta-title">Ready to Transform Your IT Support?</h2>
+        <p class="cta-subtitle">Join teams using AI to resolve IT issues faster than ever before</p>
         {% if user.is_authenticated %}
-        <a href="{% url 'create_ticket' %}" class="btn btn-light btn-lg px-5 fw-bold">
-            <i class="bi bi-plus-circle me-2"></i>Submit a Ticket
+        <a href="{% url 'create_ticket' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Submit Your First Ticket
         </a>
         {% else %}
-        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 fw-bold">
-            <i class="bi bi-arrow-right-circle me-2"></i>Create Free Account
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-arrow-right-circle me-2"></i>Start Free Today
         </a>
         {% endif %}
     </div>
 </section>
 
 {% endblock %}
+

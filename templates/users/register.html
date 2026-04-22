@@ -1,22 +1,121 @@
 ﻿{% extends 'tickets/base.html' %}
-{% block title %}Register{% endblock %}
+{% block title %}Register - AI Service Desk{% endblock %}
 
 {% block extra_css %}
 <style>
-    .auth-wrapper { display: flex; align-items: center; padding: 2rem 0; }
-    .auth-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 8px 32px rgba(37,99,235,0.1); overflow: hidden; }
-    .auth-brand { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 1.75rem 2rem 1.5rem; text-align: center; }
-    .auth-brand h4 { color: #fff; font-weight: 800; margin: 0.5rem 0 0.25rem; font-size: 1.4rem; }
-    .auth-brand p  { color: #94a3b8; font-size: 0.85rem; margin: 0; }
-    .auth-body { padding: 2rem; }
-    .form-label { font-size: 0.85rem; font-weight: 600; color: #374151; }
-    .form-control { border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.9rem; padding: 0.55rem 0.85rem; }
-    .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .auth-wrapper { 
+        display: flex; 
+        align-items: center; 
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #0f1419 0%, rgba(0, 217, 255, 0.03) 100%);
+        min-height: calc(100vh - 130px);
+    }
+    .auth-card { 
+        background: rgba(26, 31, 40, 0.9);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 16px; 
+        box-shadow: 0 0 60px rgba(0, 217, 255, 0.15);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    .auth-brand { 
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 245, 255, 0.05) 100%);
+        border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+        padding: 2.5rem 2rem 2rem; 
+        text-align: center; 
+    }
+    .auth-brand i {
+        font-size: 2.5rem;
+        background: linear-gradient(90deg, #00d9ff, #00f5ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+    }
+    .auth-brand h4 { 
+        color: #00f5ff; 
+        font-weight: 900; 
+        margin: 0.75rem 0 0.25rem; 
+        font-size: 1.5rem;
+        letter-spacing: -0.5px;
+    }
+    .auth-brand h4 span {
+        color: #00d9ff;
+    }
+    .auth-brand p  { 
+        color: #a0f3ff; 
+        font-size: 0.9rem; 
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .auth-body { padding: 2.5rem 2rem; }
+    .form-label { 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #00f5ff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+    }
+    .form-control { 
+        border-radius: 8px; 
+        border: 1px solid rgba(0, 217, 255, 0.3); 
+        font-size: 0.9rem; 
+        padding: 0.7rem 0.85rem;
+        background: rgba(26, 31, 40, 0.8);
+        color: var(--text-light);
+        transition: all 0.3s ease;
+    }
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+    .form-control:focus { 
+        border-color: #00d9ff; 
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        background: rgba(26, 31, 40, 0.95);
+        color: var(--text-light);
+        outline: none;
+    }
     .input-icon-wrapper { position: relative; }
-    .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; pointer-events: none; }
-    .input-icon-wrapper .form-control { padding-left: 2.2rem; }
-    .field-error { font-size: 0.8rem; color: #dc2626; margin-top: 4px; }
-    .auth-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 1rem 2rem; text-align: center; font-size: 0.88rem; }
+    .input-icon { 
+        position: absolute; 
+        left: 12px; 
+        top: 50%; 
+        transform: translateY(-50%); 
+        color: #00d9ff; 
+        font-size: 1.05rem; 
+        pointer-events: none;
+    }
+    .input-icon-wrapper .form-control { padding-left: 2.4rem; }
+    .field-error { 
+        font-size: 0.8rem; 
+        color: #ff6b6b; 
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .auth-footer { 
+        background: rgba(0, 217, 255, 0.05);
+        border-top: 1px solid rgba(0, 217, 255, 0.2); 
+        padding: 1.2rem 2rem; 
+        text-align: center; 
+        font-size: 0.88rem;
+        color: var(--text-muted);
+    }
+    .auth-footer a {
+        color: #00f5ff;
+        font-weight: 700;
+    }
+    .auth-footer a:hover {
+        color: #00d9ff;
+    }
+    .text-muted-opt {
+        color: var(--text-muted) !important;
+        font-weight: 400 !important;
+    }
 </style>
 {% endblock %}
 
@@ -27,15 +126,15 @@
             <div class="col-sm-11 col-md-8 col-lg-6 col-xl-5">
                 <div class="auth-card">
                     <div class="auth-brand">
-                        <i class="bi bi-person-plus-fill" style="font-size:2.2rem;color:#2563eb"></i>
-                        <h4>HelpDesk<span style="color:#60a5fa">Pro</span></h4>
+                        <i class="bi bi-person-plus-fill"></i>
+                        <h4>HelpDesk<span>Pro</span></h4>
                         <p>Create your support account</p>
                     </div>
                     <div class="auth-body">
                         {% if form.non_field_errors %}
-                        <div class="alert alert-danger d-flex align-items-center gap-2" style="font-size:0.88rem">
+                        <div class="alert alert-danger d-flex align-items-center gap-2" style="font-size: 0.88rem; margin-bottom: 1.5rem;">
                             <i class="bi bi-exclamation-triangle-fill"></i>
-                            {{ form.non_field_errors }}
+                            <div>{{ form.non_field_errors }}</div>
                         </div>
                         {% endif %}
                         <form method="post" novalidate>
@@ -47,7 +146,7 @@
                                         <i class="bi bi-person input-icon"></i>
                                         {{ form.username }}
                                     </div>
-                                    {% for e in form.username.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+                                    {% for e in form.username.errors %}<div class="field-error"><i class="bi bi-x-circle"></i>{{ e }}</div>{% endfor %}
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label" for="id_email">Email</label>
@@ -55,15 +154,15 @@
                                         <i class="bi bi-envelope input-icon"></i>
                                         {{ form.email }}
                                     </div>
-                                    {% for e in form.email.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+                                    {% for e in form.email.errors %}<div class="field-error"><i class="bi bi-x-circle"></i>{{ e }}</div>{% endfor %}
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label" for="id_department">Department <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
+                                    <label class="form-label" for="id_department">Department <span class="text-muted-opt">(optional)</span></label>
                                     <div class="input-icon-wrapper">
                                         <i class="bi bi-building input-icon"></i>
                                         {{ form.department }}
                                     </div>
-                                    {% for e in form.department.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+                                    {% for e in form.department.errors %}<div class="field-error"><i class="bi bi-x-circle"></i>{{ e }}</div>{% endfor %}
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label" for="id_password1">Password</label>
@@ -71,7 +170,7 @@
                                         <i class="bi bi-lock input-icon"></i>
                                         {{ form.password1 }}
                                     </div>
-                                    {% for e in form.password1.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+                                    {% for e in form.password1.errors %}<div class="field-error"><i class="bi bi-x-circle"></i>{{ e }}</div>{% endfor %}
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label" for="id_password2">Confirm Password</label>
@@ -79,16 +178,16 @@
                                         <i class="bi bi-lock-fill input-icon"></i>
                                         {{ form.password2 }}
                                     </div>
-                                    {% for e in form.password2.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ e }}</div>{% endfor %}
+                                    {% for e in form.password2.errors %}<div class="field-error"><i class="bi bi-x-circle"></i>{{ e }}</div>{% endfor %}
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 mt-4" style="border-radius:8px;padding:0.65rem;font-weight:600">
+                            <button type="submit" class="btn btn-primary w-100 mt-4" style="padding: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                                 <i class="bi bi-person-check me-2"></i>Create Account
                             </button>
                         </form>
                     </div>
                     <div class="auth-footer">
-                        Already have an account? <a href="{% url 'login' %}" style="color:#2563eb;font-weight:600">Sign in</a>
+                        Already have an account? <a href="{% url 'login' %}">Sign in</a>
                     </div>
                 </div>
             </div>
