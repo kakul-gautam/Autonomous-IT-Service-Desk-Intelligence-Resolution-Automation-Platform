@@ -27,22 +27,60 @@ for _p in (_PROJECT_ROOT, _AI_MODELS_DIR):
 from ai_models.utils.preprocess import preprocess
 
 # ── Load artifacts once at import time ────────────────────────────────────────
-_word_vectorizer = joblib.load(os.path.join(_AI_MODELS_DIR, 'word_vectorizer.pkl'))
-_word_tfidf_matrix = joblib.load(os.path.join(_AI_MODELS_DIR, 'word_tfidf_matrix.pkl'))
+# Load core artifacts with proper error handling
+def _load_artifacts():
+    """Load AI model artifacts with error handling."""
+    artifacts = {
+        'word_vectorizer': None,
+        'word_tfidf_matrix': None,
+        'char_vectorizer': None,
+        'char_tfidf_matrix': None,
+        'solutions': None,
+        'categories': None,
+    }
+    
+    # Load required artifacts
+    try:
+        artifacts['word_vectorizer'] = joblib.load(os.path.join(_AI_MODELS_DIR, 'word_vectorizer.pkl'))
+        artifacts['word_tfidf_matrix'] = joblib.load(os.path.join(_AI_MODELS_DIR, 'word_tfidf_matrix.pkl'))
+        artifacts['solutions'] = joblib.load(os.path.join(_AI_MODELS_DIR, 'solutions.pkl'))
+    except FileNotFoundError as e:
+        raise ImportError(
+            f"Critical AI model artifacts missing. Run ai_models/training/train_model.py first. Error: {e}"
+        ) from e
+    
+    # Load optional character-level artifacts
+    _char_vectorizer_path = os.path.join(_AI_MODELS_DIR, 'char_vectorizer.pkl')
+    _char_matrix_path = os.path.join(_AI_MODELS_DIR, 'char_tfidf_matrix.pkl')
+    if os.path.exists(_char_vectorizer_path) and os.path.exists(_char_matrix_path):
+        try:
+            artifacts['char_vectorizer'] = joblib.load(_char_vectorizer_path)
+            artifacts['char_tfidf_matrix'] = joblib.load(_char_matrix_path)
+        except Exception as e:
+            # Log warning but continue without char-level features
+            import logging
+            logging.warning(f"Failed to load character artifacts: {e}")
+    
+    # Load optional categories
+    _categories_path = os.path.join(_AI_MODELS_DIR, 'categories.pkl')
+    if os.path.exists(_categories_path):
+        try:
+            artifacts['categories'] = joblib.load(_categories_path)
+        except Exception as e:
+            # Log warning but continue without categories
+            import logging
+            logging.warning(f"Failed to load categories: {e}")
+    
+    return artifacts
 
-_char_vectorizer = None
-_char_tfidf_matrix = None
-_char_vectorizer_path = os.path.join(_AI_MODELS_DIR, 'char_vectorizer.pkl')
-_char_matrix_path = os.path.join(_AI_MODELS_DIR, 'char_tfidf_matrix.pkl')
-if os.path.exists(_char_vectorizer_path) and os.path.exists(_char_matrix_path):
-    _char_vectorizer = joblib.load(_char_vectorizer_path)
-    _char_tfidf_matrix = joblib.load(_char_matrix_path)
-
-_solutions = joblib.load(os.path.join(_AI_MODELS_DIR, 'solutions.pkl'))
-_categories = None
-_categories_path = os.path.join(_AI_MODELS_DIR, 'categories.pkl')
-if os.path.exists(_categories_path):
-    _categories = joblib.load(_categories_path)
+# Load artifacts
+_artifacts = _load_artifacts()
+_word_vectorizer = _artifacts['word_vectorizer']
+_word_tfidf_matrix = _artifacts['word_tfidf_matrix']
+_char_vectorizer = _artifacts['char_vectorizer']
+_char_tfidf_matrix = _artifacts['char_tfidf_matrix']
+_solutions = _artifacts['solutions']
+_categories = _artifacts['categories']
 
 _FALLBACK       = "Please contact IT support for further troubleshooting."
 _THRESHOLD      = 0.28
@@ -217,7 +255,23 @@ def predict_with_confidence(issue_text: str, confidence_threshold: float = 0.5) 
     if len(top_k_scores) == 0:
         return ("Uncertain", 0.0)
 
-    top_categories = [str(_categories[i]) for i in top_k_indices]
+    # Safe category lookup with fallback
+    try:
+        top_categories = [str(_categories[i]) if _categories and i < len(_categories) else "Uncertain" 
+                         for i in top_k_indices]
+    except (IndexError, TypeError):
+        # If categories are not available or indexing fails, use fallback keywords
+        text = cleaned.lower()
+        if any(k in text for k in ("wifi", "network", "internet", "vpn", "router", "ethernet")):
+            return (_normalize_category_label("network"), 0.65)
+        if any(k in text for k in ("login", "password", "account", "username", "credential")):
+            return (_normalize_category_label("account"), 0.65)
+        if any(k in text for k in ("laptop", "keyboard", "screen", "battery", "monitor", "device")):
+            return (_normalize_category_label("hardware"), 0.65)
+        if any(k in text for k in ("software", "application", "app", "crash", "install", "update", "error")):
+            return (_normalize_category_label("software"), 0.65)
+        return ("Uncertain", 0.0)
+    
     best_category, consensus_ratio = _weighted_vote(top_categories, top_k_scores)
 
     max_score = float(top_k_scores[0])
