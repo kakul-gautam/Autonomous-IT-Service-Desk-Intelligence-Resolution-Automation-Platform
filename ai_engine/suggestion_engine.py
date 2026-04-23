@@ -25,6 +25,10 @@ def get_ai_solution(issue_text: str) -> str:
         from ai_models.inference.predictor import predict_solution
         solution, _confidence = predict_solution(issue_text)
         return solution if solution else _FALLBACK
+    except (ImportError, RuntimeError, ValueError, TypeError) as e:
+        logger.error('ML Error (model issue): %s', str(e), exc_info=True)
+        return _FALLBACK
     except Exception as e:
-        logger.error('ML Error: %s', str(e), exc_info=True)
+        # Catch any other unexpected errors and log less aggressively
+        logger.warning('Unexpected error in AI suggestion: %s', str(e))
         return _FALLBACK
