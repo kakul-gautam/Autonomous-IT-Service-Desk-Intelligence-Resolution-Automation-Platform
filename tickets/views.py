@@ -1,9 +1,17 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 import logging
-from .forms import TicketForm
-from .models import Ticket
+from .forms import TicketForm, TicketCommentForm
+from .models import Ticket, TicketComment
+from .security import (
+    validate_feedback_text,
+    user_can_access_ticket,
+    user_owns_ticket
+)
 from ai_models.inference.predictor import predict_with_confidence
 from ai_engine.engine import detect_priority
 from ai_engine.suggestion_engine import get_ai_solution
@@ -186,7 +194,7 @@ def create_ticket(request):
                     prediction_source,
                 )
                 return render(request, 'tickets/ticket_result.html', context)
-            except Exception as e:
+            except (ValidationError, IntegrityError, ValueError, KeyError) as e:
                 logger.error('Error in ticket creation: %s', str(e), exc_info=True)
                 return render(
                     request,
@@ -203,7 +211,333 @@ def create_ticket(request):
     # Render the form template
     return render(request, 'tickets/create_ticket.html', {'form': form})
 
-# Basic view to confirm tickets app is working
+# ============================================================================
+# AI SUGGESTION ACTIONS - User interaction with AI recommendations
+# ============================================================================
+
+@login_required
+def ticket_detail(request, ticket_id):
+    """
+    Display ticket details with AI suggestion prominently featured.
+    
+    Shows:
+    - Ticket information
+    - AI-suggested solution
+    - Action buttons: "Mark as Resolved" or "Still Need Help"
+    - Feedback from other users (if any)
+    """
+    try:
+        ticket = Ticket.objects.get(id=ticket_id, owner=request.user)
+    except Ticket.DoesNotExist:
+        return redirect('dashboard_home')
+    
+    context = {
+        'ticket': ticket,
+        'ai_solution_pending': ticket.ai_solution_helpful is None,
+        'ai_was_helpful': ticket.ai_solution_helpful,
+    }
+    
+    return render(request, 'tickets/ticket_detail.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def mark_ai_helpful(request, ticket_id):
+    """
+    Mark AI suggestion as helpful and resolve the ticket.
+    
+    Security:
+    - Requires login
+    - Requires POST method (CSRF protected)
+    - Validates user ownership of ticket
+    - Sanitizes feedback input
+    
+    Workflow:
+    1. User clicks "Mark as Resolved"
+    2. AI suggestion marked as helpful
+    3. Ticket status updated to "Resolved"
+    4. User can optionally add feedback
+    5. Redirect to dashboard with success message
+    """
+    try:
+        # Authorization: Check user owns this ticket
+        ticket = Ticket.objects.get(id=ticket_id)
+        
+        if not user_can_access_ticket(request.user, ticket):
+            logger.warning(
+                f"Unauthorized access attempt: user_id={request.user.id} "
+                f"ticket_id={ticket_id}"
+            )
+            return redirect('dashboard_home')
+        
+        # Get and validate feedback
+        raw_feedback = request.POST.get('feedback', '').strip()
+        
+        try:
+            feedback = validate_feedback_text(raw_feedback)
+        except Exception as e:
+            logger.error(
+                f"Feedback validation error: ticket_id={ticket_id} error={str(e)}"
+            )
+            feedback = ""
+        
+        # Mark ticket as resolved
+        ticket.mark_ai_solution_helpful(feedback_text=feedback)
+        
+        logger.info(
+            'AI solution marked helpful: ticket_id=%s user_id=%s feedback_len=%d',
+            ticket.id,
+            request.user.id,
+            len(feedback)
+        )
+        
+        return render(
+            request,
+            'tickets/ai_action_success.html',
+            {
+                'ticket': ticket,
+                'action': 'resolved',
+                'message': 'Great! Your ticket has been marked as resolved using the AI suggestion.'
+            }
+        )
+    except Ticket.DoesNotExist:
+        logger.warning(f"Ticket not found: ticket_id={ticket_id}")
+        return redirect('dashboard_home')
+    except Exception as e:
+        logger.error(
+            f'Error marking AI helpful: ticket_id={ticket_id} error={str(e)}',
+            exc_info=True
+        )
+        return render(
+            request,
+            'tickets/ai_action_error.html',
+            {
+                'ticket': ticket,  # Use explicitly defined ticket variable
+                'message': 'An error occurred while processing your request. Please try again.'
+            }
+        )
+
+
+@login_required
+@require_http_methods(["POST"])
+def mark_ai_unhelpful(request, ticket_id):
+    """
+    Mark AI suggestion as unhelpful and redirect to support.
+    
+    Security:
+    - Requires login
+    - Requires POST method (CSRF protected)
+    - Validates user ownership of ticket
+    - Sanitizes feedback input
+    
+    Workflow:
+    1. User clicks "Still Need Help"
+    2. AI suggestion marked as unhelpful
+    3. Capture feedback for improvement
+    4. Redirect to support system with prefilled context
+    5. Support agent has access to ticket details and feedback
+    """
+    ticket = None  # Initialize before try block
+    try:
+        # Authorization: Check user owns this ticket
+        ticket = Ticket.objects.get(id=ticket_id)
+        
+        if not user_can_access_ticket(request.user, ticket):
+            logger.warning(
+                f"Unauthorized access attempt: user_id={request.user.id} "
+                f"ticket_id={ticket_id}"
+            )
+            return redirect('dashboard_home')
+        
+        # Get and validate feedback
+        raw_feedback = request.POST.get('feedback', '').strip()
+        
+        try:
+            feedback = validate_feedback_text(raw_feedback)
+        except Exception as e:
+            logger.error(
+                f"Feedback validation error: ticket_id={ticket_id} error={str(e)}"
+            )
+            feedback = ""
+        
+        # Mark ticket as unhelpful
+        ticket.mark_ai_solution_unhelpful(feedback_text=feedback)
+        
+        logger.info(
+            'AI solution marked unhelpful: ticket_id=%s user_id=%s feedback_len=%d',
+            ticket.id,
+            request.user.id,
+            len(feedback)
+        )
+        
+        # Get or create support ticket with context
+        from support.models import SupportTicket
+        
+        # Check if support ticket already exists for this ticket
+        support_ticket = SupportTicket.objects.filter(
+            user=request.user,
+            category=ticket.category,
+            title__icontains=ticket.id
+        ).first()
+        
+        created = False
+        if support_ticket is None:
+            # Create new support ticket
+            support_ticket = SupportTicket.objects.create(
+                title=f'Support needed for: {ticket.title}',
+                description=(
+                    f'Original issue: {ticket.description}\n\n'
+                    f'AI suggestion was: {ticket.suggested_solution}\n\n'
+                    f'Why it didn\'t help: {feedback if feedback else "User indicated more support needed"}'
+                ),
+                user=request.user,
+                category=ticket.category,
+                status='Open'
+            )
+            created = True
+        
+        return render(
+            request,
+            'tickets/ai_action_routed.html',
+            {
+                'ticket': ticket,
+                'support_ticket': support_ticket if created else None,
+                'message': 'Your feedback has been recorded. A support agent will help you further.'
+            }
+        )
+    except Ticket.DoesNotExist:
+        logger.warning(f"Ticket not found: ticket_id={ticket_id}")
+        return redirect('dashboard_home')
+    except Exception as e:
+        logger.error(
+            f'Error marking AI unhelpful: ticket_id={ticket_id} error={str(e)}',
+            exc_info=True
+        )
+        return render(
+            request,
+            'tickets/ai_action_error.html',
+            {
+                'ticket': ticket,
+                'message': 'An error occurred while escalating your ticket. Please try again.'
+            }
+        )
+
+
+# ============================================================================
+# EXPORT FEATURE
+# ============================================================================
+
+@login_required
+def export_my_tickets(request):
+    """
+    Export user's tickets to CSV format.
+    
+    Security:
+    - Requires login
+    - Only exports user's own tickets
+    - Sets proper download headers
+    """
+    from .export import export_tickets_to_csv
+    
+    try:
+        # Get only user's own tickets
+        tickets = Ticket.objects.filter(owner=request.user).order_by('-created_at')
+        
+        if not tickets.exists():
+            return render(
+                request,
+                'tickets/export_error.html',
+                {'message': 'You have no tickets to export.'}
+            )
+        
+        logger.info(
+            'Exporting tickets: user_id=%s count=%d',
+            request.user.id,
+            tickets.count()
+        )
+        
+        return export_tickets_to_csv(request.user, tickets)
+    
+    except Exception as e:
+        logger.error(
+            f'Error exporting tickets: user_id={request.user.id} error={str(e)}',
+            exc_info=True
+        )
+        return render(
+            request,
+            'tickets/export_error.html',
+            {'message': 'An error occurred while exporting your tickets.'}
+        )
+
+
+# ============================================================================
+# TICKET COMMENTS
+# ============================================================================
+
+@login_required
+@require_http_methods(["POST"])
+def add_comment(request, ticket_id):
+    """
+    Add a comment to a ticket.
+    
+    Security:
+    - Requires login
+    - Requires POST method (CSRF protected)
+    - Only allows commenting on own tickets
+    """
+    try:
+        ticket = Ticket.objects.get(id=ticket_id, owner=request.user)
+    except Ticket.DoesNotExist:
+        return redirect('dashboard_home')
+    
+    form = TicketCommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.ticket = ticket
+        comment.author = request.user
+        comment.save()
+        
+        logger.info(
+            'Comment added: ticket_id=%s user_id=%s',
+            ticket.id,
+            request.user.id
+        )
+    
+    return redirect('ticket_detail', ticket_id=ticket.id)
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_comment(request, comment_id):
+    """
+    Delete a comment from a ticket.
+    
+    Security:
+    - Requires login
+    - Requires POST method (CSRF protected)
+    - Only allows deleting own comments
+    """
+    try:
+        comment = TicketComment.objects.get(id=comment_id, author=request.user)
+        ticket_id = comment.ticket.id
+        comment.delete()
+        
+        logger.info(
+            'Comment deleted: comment_id=%s user_id=%s',
+            comment_id,
+            request.user.id
+        )
+    except TicketComment.DoesNotExist:
+        return redirect('dashboard_home')
+    
+    return redirect('ticket_detail', ticket_id=ticket_id)
+
+
+# ============================================================================
+# HELPER VIEW
+# ============================================================================
+
+@login_required
 def ticket_home(request):
     """
     Simple view that returns a plain text response

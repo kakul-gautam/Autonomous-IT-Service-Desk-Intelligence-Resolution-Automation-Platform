@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,11 +22,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zj2jtht_8a)dn&wjmy8)gg%a0ug-1)drcnnf%tw2mmubr7!-tl'
+# CRITICAL: In production, SECRET_KEY MUST be set via environment variable
+# NEVER use the default value in production environments
+if 'SECRET_KEY' not in os.environ:
+    import warnings
+    warnings.warn(
+        'SECRET_KEY is not set via environment variable. Using development default. '
+        'Set SECRET_KEY environment variable in production!',
+        RuntimeWarning
+    )
+
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-dev-key-only-for-development-use-env-var-in-production'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Secure-by-default: False unless DJANGO_DEBUG=true is explicitly set.
-DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
+# Development default: keep DEBUG enabled while building locally.
+# IMPORTANT: Set DEBUG = False in production to prevent information disclosure.
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
 # Default to local-safe hosts in development; override via env in deployment.
 ALLOWED_HOSTS = [
@@ -64,6 +79,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom security middleware for rate limiting and security headers
+    'config.security_middleware.RateLimitMiddleware',
+    'config.security_middleware.SecurityHeadersMiddleware',
+    'config.security_middleware.InputValidationMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -140,6 +159,55 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================================================
+# CACHE CONFIGURATION
+# ============================================================================
+# Used for rate limiting and session storage
+# Configurable based on environment - local dev uses in-memory, production uses Redis
+if os.getenv('REDIS_URL'):
+    # Production: use Redis for shared cache across processes
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            }
+        }
+    }
+else:
+    # Development: use in-memory cache (not suitable for multi-process)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'itdesk-cache',
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000
+            }
+        }
+    }
+
+# ============================================================================
+# SECURITY SETTINGS
+# ============================================================================
+# Enhanced security settings for production
+SESSION_COOKIE_SECURE = not DEBUG  # Only send HTTPS in production
+SESSION_COOKIE_HTTPONLY = True     # Prevent JavaScript access
+CSRF_COOKIE_SECURE = not DEBUG     # Only send HTTPS in production
+# CSRF_COOKIE_HTTPONLY = False is required when using {% csrf_token %} template tag
+# which is used throughout this application (not False by default in Django)
+CSRF_COOKIE_HTTPONLY = False       # Allow {% csrf_token %} template tag to work
+# Normalize CSRF_TRUSTED_ORIGINS: split on comma and strip whitespace from each origin
+csrf_origins_str = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() 
+    for origin in csrf_origins_str.split(',') 
+    if origin.strip()
+]
 
 LOGGING = {
     'version': 1,

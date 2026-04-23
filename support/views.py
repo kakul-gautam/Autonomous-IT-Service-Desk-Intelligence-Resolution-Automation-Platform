@@ -1,8 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.views.decorators.http import require_http_methods
+from django.db import transaction, IntegrityError
 from django.db.models import F, Q
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponseForbidden
 import logging
 
 from .forms import SupportCommentForm, SupportTicketForm
@@ -66,10 +69,12 @@ def support_list(request):
 
 
 @login_required
+@require_http_methods(["POST"])
 def upvote_ticket(request, ticket_id):
-    if request.method != 'POST':
-        return redirect('support_list')
-
+    """
+    Security: @login_required ensures only authenticated users can upvote
+    Security: @require_http_methods(['POST']) prevents GET requests and XSS attacks
+    """
     visible_tickets = SupportTicket.objects.all() if request.user.is_staff else SupportTicket.objects.filter(user=request.user)
     ticket = get_object_or_404(visible_tickets, id=ticket_id)
 
@@ -82,7 +87,7 @@ def upvote_ticket(request, ticket_id):
                 logger.info('Support ticket upvoted: ticket_id=%s user_id=%s', ticket.id, request.user.id)
             else:
                 messages.info(request, 'You already upvoted this issue.')
-    except Exception as e:
+    except (IntegrityError, ValueError) as e:
         logger.error('Error in support upvote: %s', str(e), exc_info=True)
         messages.error(request, 'Unable to register your upvote right now.')
 
@@ -93,7 +98,12 @@ def upvote_ticket(request, ticket_id):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def support_create(request):
+    """
+    Security: @login_required ensures only authenticated users can create support tickets
+    Security: @require_http_methods limits to safe GET and POST-only methods
+    """
     prefill = request.GET.get('prefill', '').strip()
 
     if request.method == 'POST':
@@ -106,7 +116,7 @@ def support_create(request):
                 logger.info('Support ticket created: ticket_id=%s user_id=%s', ticket.id, request.user.id)
                 messages.success(request, 'Support issue created successfully.')
                 return redirect('support_detail', ticket_id=ticket.id)
-            except Exception as e:
+            except (IntegrityError, ValidationError, ValueError) as e:
                 logger.error('Error in support ticket creation: %s', str(e), exc_info=True)
                 messages.error(request, 'Unable to create support issue right now.')
     else:
@@ -117,6 +127,7 @@ def support_create(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def support_detail(request, ticket_id):
     visible_tickets = SupportTicket.objects.select_related('user')
     if not request.user.is_staff:
@@ -136,7 +147,10 @@ def support_detail(request, ticket_id):
                     logger.info('Support comment added: ticket_id=%s user_id=%s', ticket.id, request.user.id)
                     messages.success(request, 'Comment added.')
                     return redirect('support_detail', ticket_id=ticket.id)
-            elif action == 'update_status' and request.user.is_staff:
+            elif action == 'update_status':
+                if not request.user.is_staff:
+                    logger.warning('Unauthorized support status update attempt: ticket_id=%s user_id=%s', ticket.id, request.user.id)
+                    return HttpResponseForbidden('You are not authorized to update issue status.')
                 new_status = request.POST.get('status', ticket.status)
                 allowed = {choice[0] for choice in SupportTicket.STATUS_CHOICES}
                 if new_status in allowed:
@@ -145,19 +159,28 @@ def support_detail(request, ticket_id):
                     logger.info('Support status updated: ticket_id=%s status=%s staff_id=%s', ticket.id, new_status, request.user.id)
                     messages.success(request, 'Issue status updated.')
                 return redirect('support_detail', ticket_id=ticket.id)
-            elif action == 'mark_resolved' and request.user.is_staff:
+            elif action == 'mark_resolved':
+                if not request.user.is_staff:
+                    logger.warning('Unauthorized mark_resolved attempt: ticket_id=%s user_id=%s', ticket.id, request.user.id)
+                    return HttpResponseForbidden('You are not authorized to resolve issues.')
                 ticket.status = SupportTicket.STATUS_RESOLVED
                 ticket.save(update_fields=['status'])
                 logger.info('Support marked resolved: ticket_id=%s staff_id=%s', ticket.id, request.user.id)
                 messages.success(request, 'Issue marked as Resolved.')
                 return redirect('support_detail', ticket_id=ticket.id)
-            elif action == 'mark_in_progress' and request.user.is_staff:
+            elif action == 'mark_in_progress':
+                if not request.user.is_staff:
+                    logger.warning('Unauthorized mark_in_progress attempt: ticket_id=%s user_id=%s', ticket.id, request.user.id)
+                    return HttpResponseForbidden('You are not authorized to update issue progress.')
                 ticket.status = SupportTicket.STATUS_IN_PROGRESS
                 ticket.save(update_fields=['status'])
                 logger.info('Support marked in progress: ticket_id=%s staff_id=%s', ticket.id, request.user.id)
                 messages.success(request, 'Issue marked as In Progress.')
                 return redirect('support_detail', ticket_id=ticket.id)
-            elif action == 'toggle_highlight' and request.user.is_staff:
+            elif action == 'toggle_highlight':
+                if not request.user.is_staff:
+                    logger.warning('Unauthorized toggle_highlight attempt: ticket_id=%s user_id=%s', ticket.id, request.user.id)
+                    return HttpResponseForbidden('You are not authorized to highlight issues.')
                 ticket.is_highlighted = not ticket.is_highlighted
                 ticket.save(update_fields=['is_highlighted'])
                 logger.info('Support highlight toggled: ticket_id=%s highlighted=%s staff_id=%s', ticket.id, ticket.is_highlighted, request.user.id)
@@ -166,7 +189,10 @@ def support_detail(request, ticket_id):
                 else:
                     messages.info(request, 'Issue highlight removed.')
                 return redirect('support_detail', ticket_id=ticket.id)
-            elif action == 'delete_issue' and request.user.is_staff:
+            elif action == 'delete_issue':
+                if not request.user.is_staff:
+                    logger.warning('Unauthorized delete_issue attempt: ticket_id=%s user_id=%s', ticket.id, request.user.id)
+                    return HttpResponseForbidden('You are not authorized to delete issues.')
                 ticket_id_to_delete = ticket.id
                 ticket.delete()
                 logger.info('Support issue deleted: ticket_id=%s staff_id=%s', ticket_id_to_delete, request.user.id)
@@ -174,7 +200,7 @@ def support_detail(request, ticket_id):
                 return redirect('support_list')
             else:
                 comment_form = SupportCommentForm()
-        except Exception as e:
+        except (ValidationError, IntegrityError, ValueError) as e:
             logger.error('Error in support detail action: action=%s ticket_id=%s error=%s', action, ticket.id, str(e), exc_info=True)
             messages.error(request, 'Unable to process this support action right now.')
             return redirect('support_detail', ticket_id=ticket.id)
