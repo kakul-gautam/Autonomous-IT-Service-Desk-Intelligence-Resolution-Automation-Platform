@@ -3,11 +3,58 @@
 
 {% block extra_css %}
 <style>
-    .settings-card { border-radius: 12px; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
-    .settings-card:hover { border-color: #bfdbfe; background: #f0f9ff; }
-    .settings-icon { font-size: 1.8rem; color: #2563eb; margin-right: 1rem; }
-    .info-block { padding: 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem; }
-    .stat-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #e0e7ff; color: #3730a3; border-radius: 8px; font-weight: 600; }
+    .settings-card {
+        border-radius: 14px;
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        background: linear-gradient(145deg, rgba(15, 20, 25, 0.95), rgba(22, 30, 40, 0.92));
+        box-shadow: 0 0 35px rgba(0, 217, 255, 0.08);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .settings-card:hover {
+        border-color: rgba(0, 245, 255, 0.55);
+        box-shadow: 0 0 55px rgba(0, 217, 255, 0.18);
+        transform: translateY(-3px);
+    }
+    .settings-card .card-body h6 {
+        color: #9cecff;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .settings-icon {
+        font-size: 1.8rem;
+        color: #00d9ff;
+        margin-right: 1rem;
+        text-shadow: 0 0 14px rgba(0, 217, 255, 0.35);
+    }
+    .info-block {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(8, 18, 28, 0.92), rgba(12, 26, 40, 0.88));
+        border: 1px solid rgba(0, 217, 255, 0.22);
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    .info-block small {
+        color: #83b9ca !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.2px;
+    }
+    .info-block p {
+        color: #e8fcff;
+        font-weight: 500;
+    }
+    .stat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 217, 255, 0.14);
+        color: #80eeff;
+        border: 1px solid rgba(0, 217, 255, 0.35);
+        border-radius: 8px;
+        font-weight: 700;
+    }
 </style>
 {% endblock %}
 
@@ -17,9 +64,9 @@
      style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:14px;color:#fff">
     <div>
         <h5 class="mb-1 fw-bold">Account Settings</h5>
-        <p class="mb-0" style="color:#94a3b8;font-size:0.88rem">Manage your profile and account preferences</p>
+        <p class="mb-0" style="color:#a0f3ff;font-size:0.88rem">Manage your profile and account preferences</p>
     </div>
-    <a href="{% url 'dashboard_home' %}" class="btn btn-light btn-sm" style="border-radius:8px">
+    <a href="{% url 'dashboard_home' %}" class="btn btn-sm" style="border-radius:10px;background:rgba(0,217,255,0.14);color:#c8f9ff;border:1px solid rgba(0,217,255,0.4)">
         <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
     </a>
 </div>
@@ -35,38 +82,38 @@
                 </div>
                 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Username</small>
+                    <small style="color:#8ab9cb;font-weight:600">Username</small>
                     <p class="mb-0" style="font-size:0.95rem">{{ user.username }}</p>
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Email</small>
+                    <small style="color:#8ab9cb;font-weight:600">Email</small>
                     <p class="mb-0" style="font-size:0.95rem">{{ user.email }}</p>
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Full Name</small>
+                    <small style="color:#8ab9cb;font-weight:600">Full Name</small>
                     <p class="mb-0" style="font-size:0.95rem">
                         {% if user.get_full_name %}
                             {{ user.get_full_name }}
                         {% else %}
-                            <span style="color:#94a3b8">Not set</span>
+                            <span style="color:#7dc8d8">Not set</span>
                         {% endif %}
                     </p>
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Department</small>
+                    <small style="color:#8ab9cb;font-weight:600">Department</small>
                     <p class="mb-0" style="font-size:0.95rem">
                         {% if profile.department %}
                             {{ profile.department }}
                         {% else %}
-                            <span style="color:#94a3b8">Not specified</span>
+                            <span style="color:#7dc8d8">Not specified</span>
                         {% endif %}
                     </p>
                 </div>
 
-                <a href="{% url 'edit_profile' %}" class="btn btn-primary btn-sm w-100" style="border-radius:8px">
+                <a href="{% url 'edit_profile' %}" class="btn btn-sm w-100" style="border-radius:10px;background:linear-gradient(90deg,#00d9ff,#00f5ff);color:#04111b;font-weight:700;border:none">
                     <i class="bi bi-pencil-square me-2"></i>Edit Profile
                 </a>
             </div>
@@ -83,10 +130,10 @@
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Account Type</small>
+                    <small style="color:#8ab9cb;font-weight:600">Account Type</small>
                     <p class="mb-0">
                         {% if user.is_staff or user.is_superuser %}
-                            <span class="stat-badge" style="background:#fee2e2;color:#991b1b">
+                            <span class="stat-badge" style="background:rgba(255,107,157,0.18);color:#ffc2d6;border:1px solid rgba(255,107,157,0.35)">
                                 <i class="bi bi-shield-check"></i>Administrator
                             </span>
                         {% else %}
@@ -98,16 +145,16 @@
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Member Since</small>
+                    <small style="color:#8ab9cb;font-weight:600">Member Since</small>
                     <p class="mb-0" style="font-size:0.95rem">{{ user.date_joined|date:"F d, Y" }}</p>
                 </div>
 
                 <div class="info-block">
-                    <small style="color:#64748b;font-weight:600">Password</small>
-                    <p class="mb-0" style="font-size:0.95rem;color:#94a3b8">••••••••</p>
+                    <small style="color:#8ab9cb;font-weight:600">Password</small>
+                    <p class="mb-0" style="font-size:0.95rem;color:#7dc8d8">••••••••</p>
                 </div>
 
-                <a href="{% url 'change_password' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                <a href="{% url 'change_password' %}" class="btn btn-sm w-100" style="border-radius:10px;color:#8deeff;border:1px solid rgba(0,217,255,0.45);background:rgba(0,217,255,0.08)">
                     <i class="bi bi-key me-2"></i>Change Password
                 </a>
             </div>
@@ -129,7 +176,7 @@
                     <div class="col-md-4">
                         <div class="info-block text-center">
                             <div style="font-size:2rem;font-weight:700;color:#2563eb">{{ total_tickets }}</div>
-                            <small style="color:#64748b">Total Tickets</small>
+                            <small style="color:#8ab9cb">Total Tickets</small>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -141,7 +188,7 @@
                                     0
                                 {% endif %}
                             </div>
-                            <small style="color:#64748b">Resolved</small>
+                            <small style="color:#8ab9cb">Resolved</small>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -153,7 +200,7 @@
                                     0
                                 {% endif %}
                             </div>
-                            <small style="color:#64748b">Pending</small>
+                            <small style="color:#8ab9cb">Pending</small>
                         </div>
                     </div>
                 </div>
@@ -174,24 +221,24 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                        <a href="{% url 'edit_profile' %}" class="btn btn-sm w-100" style="border-radius:10px;color:#8deeff;border:1px solid rgba(0,217,255,0.45);background:rgba(0,217,255,0.08)">
                             <i class="bi bi-pencil me-2"></i>Update Profile Info
                         </a>
                     </div>
                     <div class="col-md-6">
-                        <a href="{% url 'change_password' %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius:8px">
+                        <a href="{% url 'change_password' %}" class="btn btn-sm w-100" style="border-radius:10px;color:#8deeff;border:1px solid rgba(0,217,255,0.45);background:rgba(0,217,255,0.08)">
                             <i class="bi bi-key me-2"></i>Change Password
                         </a>
                     </div>
                     <div class="col-md-6">
-                        <a href="{% url 'export_tickets' %}" class="btn btn-outline-success btn-sm w-100" style="border-radius:8px">
+                        <a href="{% url 'export_tickets' %}" class="btn btn-sm w-100" style="border-radius:10px;color:#a6ffd9;border:1px solid rgba(30,223,167,0.45);background:rgba(30,223,167,0.1)">
                             <i class="bi bi-download me-2"></i>Export Tickets
                         </a>
                     </div>
                     <div class="col-md-6">
                         <form method="post" action="{% url 'logout' %}" class="w-100">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px">
+                            <button type="submit" class="btn btn-sm w-100" style="border-radius:10px;color:#ffd0de;border:1px solid rgba(255,107,157,0.45);background:rgba(255,107,157,0.1)">
                                 <i class="bi bi-box-arrow-right me-2"></i>Logout
                             </button>
                         </form>

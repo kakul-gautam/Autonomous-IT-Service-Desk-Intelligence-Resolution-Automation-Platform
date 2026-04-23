@@ -34,6 +34,9 @@
             box-shadow: 0 0 30px rgba(0, 217, 255, 0.1);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1100;
+            overflow: visible;
         }
         .navbar-brand { 
             font-size: 1.8rem; 
@@ -100,7 +103,12 @@
         }
 
         /* Page wrapper */
-        .page-wrapper { min-height: calc(100vh - 130px); padding: 2rem; }
+        .page-wrapper {
+            min-height: calc(100vh - 130px);
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
 
         /* Cards */
         .card { 
@@ -353,24 +361,46 @@
 
         /* Dropdown */
         .dropdown-item { 
-            padding: 0.6rem 1.1rem; 
-            font-size: 0.9rem;
+            padding: 0.75rem 1.2rem; 
+            font-size: 0.95rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            color: var(--text-light);
+            color: #a0f3ff;
             background: transparent;
+            border-radius: 6px;
+            margin: 0.35rem 0.5rem;
         }
         .dropdown-item:hover { 
-            background: rgba(0, 217, 255, 0.1);
-            color: var(--secondary);
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 245, 255, 0.08));
+            color: #00f5ff;
+            border-color: rgba(0, 217, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.15);
         }
-        .dropdown-item i { width: 1.3rem; }
+        .dropdown-item:focus { 
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 245, 255, 0.08));
+            color: #00f5ff;
+            outline: none;
+        }
+        .dropdown-item i { width: 1.4rem; color: #00d9ff; }
+        .dropdown-divider {
+            border-color: rgba(0, 217, 255, 0.1);
+            margin: 0.6rem 0;
+        }
         .dropdown-menu { 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0, 217, 255, 0.2);
+            border-radius: 14px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
             backdrop-filter: blur(10px);
-            background: rgba(26, 31, 40, 0.8);
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(26, 31, 40, 0.9));
+            padding: 0.8rem 0;
+            min-width: 180px;
+            z-index: 1200;
+        }
+
+        .navbar .dropdown,
+        .navbar .dropdown-toggle {
+            position: relative;
+            z-index: 1201;
         }
 
         /* Form styling */
@@ -398,7 +428,6 @@
             font-size: 0.85rem;
             letter-spacing: 0.5px;
         }
-    </style>
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -450,7 +479,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.username }}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="border-radius:8px;border:1px solid #e2e8f0">
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li>
                                     <a class="dropdown-item" href="{% url 'profile_view' %}">
                                         <i class="bi bi-person me-2"></i>My Profile
