@@ -1,168 +1,207 @@
 # Autonomous IT Service Desk Intelligence & Resolution Automation Platform
 
-## Overview
+## Description
 
-The **Autonomous IT Service Desk Intelligence & Resolution Automation Platform** is a web-based system designed to improve IT support operations by automating ticket handling and providing intelligent resolution suggestions.
+Autonomous IT Service Desk Intelligence & Resolution Automation Platform is a Django-based support system that automates IT ticket lifecycle management and delivers AI-driven resolution suggestions.
 
-Modern organizations handle thousands of IT support requests daily. Many of these issues are repetitive and require manual triage by IT teams. This project aims to simplify that process by integrating **machine learning-based issue analysis with a ticket management system**.
-
-The platform allows users to submit IT issues, track support tickets, and receive automated suggestions for possible solutions.
+The platform is designed to reduce manual triage effort, improve resolution speed, and provide operational visibility for both end users and administrators.
 
 ---
 
-# Key Features
+## Key Highlights
 
-## User Authentication System
+- Hybrid AI pipeline for ticket understanding and solution recommendation
+- Role-aware dashboards for users and administrators
+- Security-focused request handling, validation, and access control
+- Clean dark-themed UI tailored for modern support operations
+- Built-in analytics for incident patterns and AI effectiveness
 
-* User registration
-* Secure login and logout
-* User profile management
+---
 
-## Ticket Management System
+## Features
 
-* Create and submit support tickets
-* Track ticket details
-* Store ticket information in a database
-* Associate tickets with specific users
+- User authentication system
+- Ticket management system
+- AI-based solution suggestions
+- Admin analytics dashboard
+- Support system for unresolved issues
+- Error logging system
+- Secure authentication and validation
+- Modern UI (dark theme)
 
-## Dashboard
+---
 
-* Central interface for system monitoring
-* Displays ticket statistics
-* Shows user ticket information
+## Tech Stack
 
-## AI-Based Suggestion Engine
+- Python (Django)
+- Machine Learning (scikit-learn)
+- HTML, CSS, Bootstrap
+- SQLite
 
-The system includes a machine learning model that analyzes user issues and recommends potential solutions.
+---
 
-Workflow:
+## System Workflow
 
+1. User submits a ticket with issue title and description.
+2. AI engine classifies the issue category and priority.
+3. Similar past cases are matched for context-aware suggestions.
+4. Suggested resolution is shown to the user.
+5. User feedback is captured (helpful or unhelpful).
+6. Unresolved cases are routed into the support workflow.
+7. Admin dashboard reflects system health and performance insights.
+
+---
+
+## Project Structure
+
+### config/
+Core Django project settings, URL routing, WSGI/ASGI setup, and middleware configuration.
+
+### tickets/
+Ticket creation, detail view, AI feedback capture, exports, and ticket-level business logic.
+
+### users/
+Authentication, profile management, password management, and user-specific pages.
+
+### dashboard/
+User dashboard, admin analytics dashboard, incident overview, and metrics visualizations.
+
+### ai_models/
+Machine learning artifacts, vectorizers, encoders, and inference/training utilities.
+
+### ai_engine/
+Rule-based and similarity-based AI utilities for priority detection and suggestion generation.
+
+### support/
+Escalation and unresolved issue handling, support comments, and support ticket workflows.
+
+### monitoring/
+System metric simulation and anomaly-related utilities for operational observability.
+
+### templates/
+Frontend templates for all pages and components.
+
+### docs/
+Documentation assets, including project screenshots for this README.
+
+
+---
+
+## How to Run
+
+1. Clone the repository.
+
+```bash
+git clone https://github.com/kakul-gautam/Autonomous-IT-Service-Desk-Intelligence-Resolution-Automation-Platform.git
+cd Autonomous-IT-Service-Desk-Intelligence-Resolution-Automation-Platform
 ```
-User submits ticket
-        ↓
-AI analyzes issue text
-        ↓
-System retrieves similar past issues
-        ↓
-Suggested resolution is generated
+
+2. Create and activate a virtual environment.
+
+```bash
+python -m venv venv
+```
+
+Windows (PowerShell):
+
+```bash
+venv\Scripts\Activate.ps1
+```
+
+Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+3. Install dependencies.
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Apply migrations.
+
+```bash
+python manage.py migrate
+```
+
+5. (Optional) Create an admin user.
+
+```bash
+python manage.py createsuperuser
+```
+
+6. Start the server.
+
+```bash
+python manage.py runserver
+```
+
+Application URL:
+
+```text
+http://127.0.0.1:8000/
 ```
 
 ---
 
-# Project Architecture
+## Testing
 
-```
-User Interface (Django Templates)
-            ↓
-Django Backend (Views & APIs)
-            ↓
-Ticket Management System
-            ↓
-Machine Learning Suggestion Engine
-            ↓
-Database Storage
+Run full test suite:
+
+```bash
+python manage.py test
 ```
 
----
+Run specific app tests:
 
-# Project Structure
-
-```
-Autonomous-IT-Service-Desk-Intelligence-Resolution-Automation-Platform/
-
-config/                 # Django project configuration
-dashboard/              # Dashboard functionality
-tickets/                # Ticket management system
-users/                  # Authentication and user profiles
-templates/              # HTML templates
-
-manage.py               # Django management script
-requirements.txt        # Project dependencies
-.gitignore              # Git ignore rules
-README.md               # Project documentation
+```bash
+python manage.py test tickets
+python manage.py test users
 ```
 
 ---
 
-# Technologies Used
+## Security Notes
 
-Backend:
-
-* Python
-* Django
-
-Machine Learning:
-
-* scikit-learn
-* pandas
-* NumPy
-* joblib
-
-Frontend:
-
-* HTML
-* CSS
-* Bootstrap
-
-Database:
-
-* SQLite (development)
+- Authentication and route-level access control are enforced.
+- Forms include validation and sanitization checks.
+- ORM-based queries are used to avoid raw SQL risks.
+- CSRF protection is enabled for POST-based forms.
+- For production, set secure environment variables and disable debug mode.
 
 ---
 
-# Machine Learning Model
+## Screenshots
 
-The AI model is trained on a dataset of IT troubleshooting cases.
+### Home Page
+![Home](docs/home.png)
 
-Dataset structure:
+### Admin Dashboard
+![Dashboard](docs/dashboard.png)
 
-| issue_text            | resolution                               |
-| --------------------- | ---------------------------------------- |
-| wifi not connecting   | restart router and check network adapter |
-| laptop not turning on | check power supply and battery           |
-| printer not printing  | reinstall printer drivers                |
+### Ticket Creation
+![Ticket](docs/ticket.png)
 
-Model pipeline:
+### AI Suggestion
+![AI Suggestion](docs/ai_suggestion.png)
 
-```
-Text preprocessing
-        ↓
-TF-IDF vectorization
-        ↓
-Cosine similarity search
-        ↓
-Best matching solution returned
-```
-
-This approach allows the system to suggest solutions even for issues that are phrased differently but have similar meaning.
+### Support System
+![Support](docs/support.png)
 
 ---
 
-# Development Status
+## Future Improvements
 
-The project is currently under development.
-
-Completed modules:
-
-* Django backend setup
-* User authentication
-* Ticket management system
-
-Planned improvements:
-
-* Integration of ML predictions with ticket creation
-* Improved UI design
-* Advanced analytics dashboard
-* Automated ticket prioritization
-* Monitoring and anomaly detection
+- Improve AI accuracy
+- Add notifications
+- Enhance support system
+- Introduce role-based alerting and SLA tracking
+- Add CI pipeline for automated test and quality checks
 
 ---
 
-# Team Information
+## Project Goal
 
-Team Members:
-
-* Kakul Gautam
-* Akshata Chaudhary
-* Khushi Singh
----
+Build an intelligent, reliable, and secure IT service desk platform that combines automation, analytics, and AI-assisted resolution to improve operational efficiency.
