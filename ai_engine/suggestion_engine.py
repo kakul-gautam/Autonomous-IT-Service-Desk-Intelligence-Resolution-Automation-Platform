@@ -22,8 +22,8 @@ def get_ai_solution(issue_text: str) -> str:
     Gracefully falls back to a generic message on any error.
     """
     try:
-        from ai_models.inference.predictor import predict_solution
-        solution, _confidence = predict_solution(issue_text)
+        from tickets.ml_integration import get_ai_suggestion_with_confidence
+        solution, _confidence = get_ai_suggestion_with_confidence(issue_text)
         return solution if solution else _FALLBACK
     except (ImportError, RuntimeError, ValueError, TypeError) as e:
         logger.error('ML Error (model issue): %s', str(e), exc_info=True)
