@@ -22,25 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# CRITICAL: In production, SECRET_KEY MUST be set via environment variable
-# NEVER use the default value in production environments
-if 'SECRET_KEY' not in os.environ:
-    import warnings
-    warnings.warn(
-        'SECRET_KEY is not set via environment variable. Using development default. '
-        'Set SECRET_KEY environment variable in production!',
-        RuntimeWarning
-    )
-
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-dev-key-only-for-development-use-env-var-in-production'
-)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# Development default: keep DEBUG enabled while building locally.
-# IMPORTANT: Set DEBUG = False in production to prevent information disclosure.
+# Default to development mode for local use; set DJANGO_DEBUG=False in production.
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+
+_secret_key = os.getenv('SECRET_KEY')
+if not _secret_key:
+    if DEBUG:
+        _secret_key = 'dev-only-change-me-4b5df4a7f8aa4f2789c871f4c68a2b3e-unsafe'
+    else:
+        raise ImproperlyConfigured('SECRET_KEY environment variable must be set when DEBUG=False.')
+SECRET_KEY = _secret_key
 
 # Default to local-safe hosts in development; override via env in deployment.
 ALLOWED_HOSTS = [
@@ -154,6 +145,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -195,17 +187,26 @@ else:
 # SECURITY SETTINGS
 # ============================================================================
 # Enhanced security settings for production
-SESSION_COOKIE_SECURE = not DEBUG  # Only send HTTPS in production
-SESSION_COOKIE_HTTPONLY = True     # Prevent JavaScript access
-CSRF_COOKIE_SECURE = not DEBUG     # Only send HTTPS in production
-# CSRF_COOKIE_HTTPONLY = False is required when using {% csrf_token %} template tag
-# which is used throughout this application (not False by default in Django)
-CSRF_COOKIE_HTTPONLY = False       # Allow {% csrf_token %} template tag to work
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = not DEBUG
+# CSRF cookie must remain readable by templates/forms to submit token correctly.
+CSRF_COOKIE_HTTPONLY = False
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False' if DEBUG else 'True').lower() == 'true'
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0' if DEBUG else '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False' if DEBUG else 'True').lower() == 'true'
+SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'False' if DEBUG else 'True').lower() == 'true'
+
+# Configure this when behind a reverse proxy/ingress that terminates TLS.
+if os.getenv('SECURE_PROXY_SSL_HEADER_ENABLED', 'False').lower() == 'true':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Normalize CSRF_TRUSTED_ORIGINS: split on comma and strip whitespace from each origin
 csrf_origins_str = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000')
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() 
-    for origin in csrf_origins_str.split(',') 
+    origin.strip()
+    for origin in csrf_origins_str.split(',')
     if origin.strip()
 ]
 

@@ -14,6 +14,22 @@ import json
 logger = logging.getLogger(__name__)
 
 
+def _normalize_category(raw_category: str) -> str:
+    """Map noisy category text into stable canonical buckets."""
+    value = (raw_category or '').strip().lower()
+    if not value:
+        return 'Other'
+    if 'hardware' in value or 'device' in value or 'keyboard' in value or 'battery' in value:
+        return 'Hardware'
+    if 'software' in value or 'application' in value or 'app' in value or 'install' in value:
+        return 'Software'
+    if 'network' in value or 'wifi' in value or 'vpn' in value or 'internet' in value or 'ethernet' in value:
+        return 'Network'
+    if 'account' in value or 'login' in value or 'permission' in value or 'auth' in value:
+        return 'Account'
+    return 'Other'
+
+
 def _is_admin_user(user):
     if user.is_superuser or user.is_staff:
         return True
@@ -54,7 +70,12 @@ def dashboard_view(request):
     if priority_filter:
         tickets = tickets.filter(priority__iexact=priority_filter)
     if category_filter:
-        tickets = tickets.filter(category__iexact=category_filter)
+        matching_ids = [
+            t.id
+            for t in tickets.only('id', 'category')
+            if _normalize_category(t.category) == category_filter
+        ]
+        tickets = tickets.filter(id__in=matching_ids)
 
     total_tickets = tickets.count()
     high_priority_count = tickets.filter(priority__iexact='High').count()
@@ -79,11 +100,19 @@ def dashboard_view(request):
         ai_solution_helpful=True
     ).order_by('-ai_action_timestamp')[:5]
 
-    # Category stats - use database aggregation instead of Python loops
-    from django.db.models import Count
-    category_stats = tickets.values('category').annotate(count=Count('id'))
-    category_labels = [stat['category'] for stat in category_stats]
-    category_counts = [stat['count'] for stat in category_stats]
+    # Category stats - normalize to canonical labels to avoid duplicate legend entries.
+    category_totals = {
+        'Hardware': 0,
+        'Software': 0,
+        'Network': 0,
+        'Account': 0,
+        'Other': 0,
+    }
+    for raw_category in tickets.values_list('category', flat=True):
+        category_totals[_normalize_category(raw_category)] += 1
+
+    category_labels = [label for label, count in category_totals.items() if count > 0]
+    category_counts = [category_totals[label] for label in category_labels]
 
     # Priority stats - normalized to avoid duplicate variations (Medium showing 3 times)
     high_priority_count = tickets.filter(priority__iexact='High').count()
@@ -106,7 +135,7 @@ def dashboard_view(request):
 
     # Get available categories and statuses for filter options
     all_user_tickets = Ticket.objects.filter(owner=request.user)
-    categories = sorted(set(t.category for t in all_user_tickets if t.category))
+    categories = sorted(set(_normalize_category(t.category) for t in all_user_tickets if t.category))
     statuses = ['Pending', 'Resolved', 'Failed']
     priorities = ['High', 'Medium', 'Low']
 

@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import logging
+import re
 from .forms import TicketForm, TicketCommentForm
 from .models import Ticket, TicketComment
 from .security import (
@@ -12,93 +13,136 @@ from .security import (
     user_can_access_ticket,
     user_owns_ticket
 )
-from ai_models.inference.predictor import predict_with_confidence
+from .ml_integration import get_ai_suggestion_with_confidence
+from ai_models.inference.reranker_predictor import predict_category
 from ai_engine.engine import detect_priority
-from ai_engine.suggestion_engine import get_ai_solution
-from ai_engine.similarity import find_similar_tickets, compute_automation_confidence
 
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# HYBRID AI SYSTEM: Machine Learning + Rule-Based Safety Overrides
-# ============================================================================
-# This system uses ML for primary classification but adds rule-based
-# overrides as a safety mechanism when:
-# 1. ML confidence is low (< 70%)
-# 2. AND explicit keywords indicate a clear category
-#
-# This is NOT replacing ML, but adding explainable guardrails.
-# The system tracks prediction source for transparency.
-# ============================================================================
 
-# Keywords for rule-based overrides (used when ML confidence is low)
-CATEGORY_KEYWORDS = {
-    'Software': ['software', 'application', 'app', 'program', 'crashes', 'fails', 'error', 'install'],
-    'Hardware': ['laptop', 'keyboard', 'screen', 'mouse', 'monitor', 'device', 'hardware', 'battery'],
-    'Network': ['wifi', 'vpn', 'internet', 'network', 'connection', 'ethernet', 'router', 'modem'],
-    'Account': ['login', 'password', 'account', 'authentication', 'username', 'credentials'],
-}
+def _normalize_category(raw_category: str) -> str:
+    """Map model output to stable dashboard categories."""
+    value = (raw_category or '').strip().lower()
+    if not value:
+        return 'Other'
+    if 'hardware' in value or 'device' in value or 'keyboard' in value or 'battery' in value:
+        return 'Hardware'
+    if 'software' in value or 'application' in value or 'app' in value or 'install' in value:
+        return 'Software'
+    if 'network' in value or 'wifi' in value or 'vpn' in value or 'internet' in value or 'ethernet' in value:
+        return 'Network'
+    if 'account' in value or 'login' in value or 'permission' in value or 'auth' in value:
+        return 'Account'
+    if value == 'uncertain':
+        return 'Other'
+    return 'Other'
 
-def apply_confidence_aware_override(title, category, ml_confidence):
-    """
-    Apply rule-based override if ML confidence is low and keywords match.
-    
-    This implements human-in-the-loop AI: when the ML model is uncertain
-    (confidence < 70%), we check if explicit keywords in the title clearly
-    indicate a category. This is a safety mechanism, not a replacement for ML.
-    
-    Args:
-        title (str): Ticket title
-        category (str): ML-predicted category
-        ml_confidence (float): ML prediction confidence [0-1]
-    
-    Returns:
-        tuple: (final_category, prediction_source)
-               where prediction_source is "ML model" or "ML + rule override"
-    """
-    # Only apply overrides when ML confidence is low
-    if ml_confidence >= 0.7:
-        return (category, "ML model")
-    
-    # Check if title contains keywords for any category
-    title_lower = title.lower()
-    
-    for keyword_category, keywords in CATEGORY_KEYWORDS.items():
-        if any(keyword in title_lower for keyword in keywords):
-            # Confidence was low, but keywords suggest a clear category
-            if keyword_category != category:
-                # Override occurred
-                return (keyword_category, "ML + rule override")
-            else:
-                # Keywords match ML prediction (adds confidence)
-                return (category, "ML model")
-    
-    # No keywords matched, trust ML but mark as low-confidence
-    return (category, "ML model")
+
+def _split_ranked_blocks(raw_text: str) -> list[str]:
+    """Split a numbered suggestion string into per-suggestion blocks."""
+    text = str(raw_text or '').strip()
+    if not text:
+        return []
+
+    # Primary path: model output is joined with blank lines between suggestions.
+    blank_line_blocks = [block.strip() for block in re.split(r'\n\s*\n', text) if block.strip()]
+    if len(blank_line_blocks) > 1:
+        return blank_line_blocks
+
+    # Preferred format: each suggestion starts with "1. ", "2. ", etc.
+    matches = list(re.finditer(r'(?m)^\s*\d+\.\s+', text))
+    if len(matches) >= 2:
+        blocks = []
+        for idx, match in enumerate(matches):
+            start = match.start()
+            end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+            block = text[start:end].strip()
+            if block:
+                blocks.append(block)
+        if blocks:
+            return blocks
+
+    # Fallback: split on blank lines if numbered markers are not present.
+    return [block.strip() for block in re.split(r'\n\s*\n', text) if block.strip()]
+
+
+def _extract_steps(lines: list[str]) -> list[str]:
+    """Extract actionable steps from lines inside a suggestion block."""
+    step_candidates: list[str] = []
+
+    for line in lines[1:]:
+        # Capture nested numbered steps and common bullet markers.
+        nested = re.sub(r'^\s*(?:\d+[\.)]|[-*•])\s*', '', line).strip()
+        if nested and nested != line:
+            step_candidates.append(nested)
+
+    if step_candidates:
+        return step_candidates
+
+    # If no explicit bullets are present, treat extra lines as steps.
+    if len(lines) > 1:
+        return [line.strip() for line in lines[1:] if line.strip()]
+
+    return []
+
+
+def _build_ranked_suggestions(raw_suggestions):
+    """Convert newline-delimited ranked suggestions into template-friendly items."""
+    ranked_suggestions = []
+
+    if not raw_suggestions:
+        return ranked_suggestions
+
+    blocks = _split_ranked_blocks(raw_suggestions)
+    for index, block in enumerate(blocks, start=1):
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if not lines:
+            continue
+
+        summary = re.sub(r'^\d+\.\s*', '', lines[0]).strip()
+        if summary.endswith(':'):
+            summary = summary[:-1].strip()
+        if not summary:
+            summary = f'Suggestion {index}'
+
+        steps = _extract_steps(lines)
+
+        ranked_suggestions.append(
+            {
+                'rank': index,
+                'summary': summary,
+                'steps': steps,
+                'text': '\n'.join(lines),
+                'is_top': index == 1,
+            }
+        )
+
+    return ranked_suggestions
+
+# ============================================================================
+# MODERN ML-POWERED SYSTEM: TF-IDF + Logistic Regression Re-ranker
+# ============================================================================
+# This system uses a trained ML model (TF-IDF vectorization + LR re-ranker)
+# with diverse dataset (650 rows, 65 unique solutions) to provide
+# high-quality solution recommendations for IT support tickets.
+# ============================================================================
 
 @login_required
 def create_ticket(request):
     """
-    Handles ticket creation with hybrid AI classification system.
+    Handles ticket creation with ML-powered solution recommendations.
     
     Workflow:
     1. Validate form input
-    2. Use ML model with combined title+description for better context
-    3. Apply confidence-aware rule-based overrides if needed
-    4. Find similar past tickets for case-based reasoning
-    5. Generate solution recommendations (prioritize: similar cases > category > generic)
-    6. Display results with prediction transparency
+    2. Use trained ML model (TF-IDF + LR) to generate solution recommendations
+    3. Capture confidence score from model
+    4. Display suggested solution with confidence level
     
     ML Model Details:
-    - Trained on 500 synthetic + real examples
-    - TF-IDF vectorization with trigrams (1,3)
-    - MultinomialNB classifier with predict_proba()
-    - Confidence threshold: 50% for "Uncertain" category
-    
-    Rule-Based Overrides:
-    - Applied when ML confidence < 70%
-    - Uses explicit keywords as tie-breaker
-    - Improves accuracy for borderline cases
+    - Trained on 650 diverse IT support examples
+    - Hybrid TF-IDF: word-level (10K features) + char-level (15K features)
+    - Logistic Regression re-ranker for final scoring
+    - Confidence: model-calibrated prediction score (0-1)
     """
     if request.method == 'POST':
         form = TicketForm(request.POST)
@@ -107,93 +151,28 @@ def create_ticket(request):
                 # Create ticket instance (not saved yet)
                 ticket = form.save(commit=False)
 
-            # ================================================================
-            # IMPROVED NLP INPUT: Combine title + description
-            # ================================================================
-            # Concatenating title and description gives the ML model more context.
-            # Example:
-            #   Title: "Software not opening"
-            #   Desc: "Excel crashes when I try to open large files"
-            #   Combined text provides stronger signal for Software category
                 combined_text = f"{ticket.title} {ticket.description}"
-            
-            # ML Classification: Get prediction with confidence score
-            # Uses TF-IDF + Multinomial Naive Bayes trained on 500 examples
-                predicted_category, ml_confidence = predict_with_confidence(
-                    combined_text,
-                    confidence_threshold=0.5
-                )
-            
-            # ================================================================
-            # CONFIDENCE-AWARE RULE-BASED OVERRIDE
-            # ================================================================
-            # If ML confidence is low but title contains clear keywords,
-            # we override the prediction. This adds an explainable safety layer.
-                final_category, prediction_source = apply_confidence_aware_override(
-                    ticket.title,
-                    predicted_category,
-                    ml_confidence
-                )
-            
+                
+                # Get AI solution recommendation with confidence score
+                # Using trained ML model: TF-IDF + Logistic Regression
+                ai_solution, confidence_score = get_ai_suggestion_with_confidence(combined_text)
+                predicted_category, _category_confidence = predict_category(combined_text, confidence_threshold=0.0)
+                
+                # Save ticket with owner and AI solution
                 ticket.owner = request.user
-                ticket.category = final_category
-                ticket.priority = detect_priority(combined_text, final_category)
-            
-            # Save ticket to database
+                ticket.category = _normalize_category(predicted_category)
+                ticket.priority = detect_priority(combined_text, ticket.category)
+                ticket.suggested_solution = ai_solution
                 ticket.save()
-            
-            # ================================================================
-            # CASE-BASED REASONING: Find similar past tickets
-            # ================================================================
-            # Look for similar tickets in the knowledge base
-            # These provide validated solutions from past resolutions
-                all_other_tickets = Ticket.objects.exclude(id=ticket.id)
-                similar_tickets = find_similar_tickets(ticket, all_other_tickets, top_n=3)
-            
-            # ================================================================
-            # SOLUTION RECOMMENDATION PRIORITY
-            # ================================================================
-            # Priority order for solution recommendations:
-            # 1. If similar tickets exist, use their solutions (proven effective)
-            # 2. If no similar tickets, use category-based default solution
-            # 3. If confidence was low, add generic troubleshooting steps
-                if similar_tickets:
-                    # Use solution from most similar case
-                    ticket.suggested_solution = similar_tickets[0][0].suggested_solution
-                else:
-                    # Use AI model for solution recommendation
-                    ticket.suggested_solution = get_ai_solution(combined_text)
-            
-            # Update with final solution
-                ticket.save()
-            
-            # Compute automation confidence (based on similar tickets found)
-                automation_confidence = compute_automation_confidence(len(similar_tickets))
-            
-            # ================================================================
-            # PREPARE CONTEXT FOR TEMPLATE
-            # ================================================================
-            # Pass all relevant information for transparency
-                context = {
-                    'ticket': ticket,
-                    'similar_tickets': similar_tickets,
-                    'confidence_score': automation_confidence,
-                    'ml_confidence': ml_confidence,
-                    'ml_confidence_pct': f"{ml_confidence*100:.1f}",
-                    'prediction_source': prediction_source,
-                    # Flag for template: show warning if override occurred
-                    'was_overridden': (prediction_source == "ML + rule override"),
-                }
-
+                
                 logger.info(
-                    'Ticket created: ticket_id=%s owner_id=%s category=%s ml_confidence=%.4f source=%s',
+                    'Ticket created: ticket_id=%s owner_id=%s confidence=%.4f solution=%s',
                     ticket.id,
                     request.user.id,
-                    ticket.category,
-                    ml_confidence,
-                    prediction_source,
+                    confidence_score,
+                    ai_solution[:50],
                 )
-                return render(request, 'tickets/ticket_result.html', context)
+                return redirect('ticket_detail', ticket_id=ticket.id)
             except (ValidationError, IntegrityError, ValueError, KeyError) as e:
                 logger.error('Error in ticket creation: %s', str(e), exc_info=True)
                 return render(
@@ -235,6 +214,7 @@ def ticket_detail(request, ticket_id):
         'ticket': ticket,
         'ai_solution_pending': ticket.ai_solution_helpful is None,
         'ai_was_helpful': ticket.ai_solution_helpful,
+        'ranked_suggestions': _build_ranked_suggestions(ticket.suggested_solution),
     }
     
     return render(request, 'tickets/ticket_detail.html', context)

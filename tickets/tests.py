@@ -165,10 +165,10 @@ class TicketViewTests(TestCase):
             'title': 'Printer not working',
             'description': 'The printer is not responding to network requests'
         })
-        # Successful creation returns template with created ticket info
-        self.assertEqual(response.status_code, 200)
-        # Verify ticket was created
-        self.assertTrue(Ticket.objects.filter(title='Printer not working').exists())
+        self.assertEqual(response.status_code, 302)
+
+        created_ticket = Ticket.objects.get(title='Printer not working')
+        self.assertRedirects(response, reverse('ticket_detail', args=[created_ticket.id]))
     
     def test_detail_requires_login(self):
         """Test detail page requires login."""
@@ -318,9 +318,10 @@ class BasicCoverageTests(TestCase):
             'description': 'wifi not connecting'
         })
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         ticket = Ticket.objects.last()
         self.assertIsNotNone(ticket)
+        self.assertRedirects(response, reverse('ticket_detail', args=[ticket.id]))
         self.assertIsNotNone(ticket.suggested_solution)
         self.assertNotEqual((ticket.suggested_solution or '').strip(), '')
 
