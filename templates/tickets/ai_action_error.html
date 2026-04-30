@@ -22,25 +22,26 @@
         box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
     }
     .error-card {
-        background: white;
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(0, 245, 255, 0.04));
+        border: 1px solid rgba(0, 217, 255, 0.3);
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 217, 255, 0.15);
         margin-bottom: 2rem;
     }
     .error-title {
         font-size: 1.8rem;
         font-weight: 700;
-        color: #991b1b;
+        color: #ff6b6b;
         margin-bottom: 0.5rem;
     }
     .error-message {
-        background: #fee2e2;
-        border: 1px solid #fecaca;
+        background: rgba(255, 107, 107, 0.08);
+        border: 1px solid rgba(255, 107, 107, 0.3);
         border-radius: 8px;
         padding: 1rem;
         margin: 1.5rem 0;
-        color: #7f1d1d;
+        color: #ff6b6b;
         font-size: 0.95rem;
     }
     .action-buttons {
@@ -69,10 +70,10 @@
         transform: translateY(-2px);
     }
     .btn-secondary-error {
-        background: white;
-        color: #991b1b;
+        background: transparent;
+        color: #00f5ff;
         padding: 0.75rem 1.5rem;
-        border: 2px solid #fecaca;
+        border: 2px solid rgba(0, 217, 255, 0.5);
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
@@ -83,11 +84,11 @@
         gap: 0.5rem;
     }
     .btn-secondary-error:hover {
-        background: #fee2e2;
+        background: rgba(0, 217, 255, 0.1);
     }
     .support-contact {
-        background: #fef2f2;
-        border-left: 4px solid #dc2626;
+        background: rgba(0, 217, 255, 0.08);
+        border-left: 4px solid #00d9ff;
         padding: 1rem;
         border-radius: 8px;
         margin: 1.5rem 0;
@@ -95,11 +96,11 @@
     }
     .support-contact-title {
         font-weight: 600;
-        color: #7f1d1d;
+        color: #00f5ff;
         margin-bottom: 0.5rem;
     }
     .support-contact-text {
-        color: #991b1b;
+        color: #e0e0e0;
         font-size: 0.9rem;
         margin: 0;
     }
@@ -114,7 +115,7 @@
 
     <div class="error-card">
         <h2 class="error-title">Oops! Something Went Wrong</h2>
-        <p style="color: #4b5563; margin-bottom: 1.5rem">{{ message }}</p>
+        <p style="color: #e0e0e0; margin-bottom: 1.5rem">{{ message }}</p>
 
         <!-- Error Message -->
         <div class="error-message">
@@ -124,9 +125,9 @@
 
         <!-- Ticket Info (if available) -->
         {% if ticket %}
-        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1.5rem 0">
-            <small style="color: #64748b">Your Ticket</small>
-            <h5 style="margin: 0.25rem 0; color: #0f172a; text-align: left">
+        <div style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(0, 245, 255, 0.04)); border: 1px solid rgba(0, 217, 255, 0.3); padding: 1rem; border-radius: 8px; margin: 1.5rem 0">
+            <small style="color: #999999">Your Ticket</small>
+            <h5 style="margin: 0.25rem 0; color: #e0e0e0; text-align: left">
                 #{{ ticket.id }} - {{ ticket.title }}
             </h5>
         </div>
@@ -154,11 +155,11 @@
     </div>
 
     <!-- Troubleshooting Tips -->
-    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05)">
-        <h6 style="margin: 0 0 1rem 0; color: #0f172a">
-            <i class="bi bi-lightbulb-fill me-2" style="color: #fbbf24"></i>Troubleshooting Tips
+    <div style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(0, 245, 255, 0.04)); border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0, 217, 255, 0.1)">
+        <h6 style="margin: 0 0 1rem 0; color: #00f5ff">
+            <i class="bi bi-lightbulb-fill me-2"></i>Troubleshooting Tips
         </h6>
-        <ul style="margin: 0; padding-left: 1.5rem; color: #4b5563; text-align: left; font-size: 0.9rem">
+        <ul style="margin: 0; padding-left: 1.5rem; color: #e0e0e0; text-align: left; font-size: 0.9rem">
             <li style="margin-bottom: 0.5rem">Try refreshing the page</li>
             <li style="margin-bottom: 0.5rem">Clear your browser cache and cookies</li>
             <li style="margin-bottom: 0.5rem">Try again in a few moments</li>

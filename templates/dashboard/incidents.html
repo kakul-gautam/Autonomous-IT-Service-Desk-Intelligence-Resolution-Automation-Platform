@@ -256,7 +256,7 @@
         <div style="background:rgba(0,217,255,0.1);border-radius:99px;height:16px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.2); border: 1px solid rgba(0,217,255,0.2)">
             <div style="width:{{ success_rate }}%;height:100%;background:linear-gradient(90deg, #00d9ff, #1edfa7);border-radius:99px;transition:width 0.6s ease;box-shadow:0 0 20px rgba(0,217,255,0.5)"></div>
         </div>
-        <div style="font-size:0.82rem;color:#999999;margin-top:10px">
+        <div style="font-size:0.85rem;color:#a0f3ff;margin-top:10px;font-weight:500">
             <strong style="color:#1edfa7">{{ resolved_count }}</strong> of your <strong style="color:#00d9ff">{{ total_tickets }}</strong> tickets resolved · <strong style="color:#ffc107">{{ pending_count }}</strong> pending
         </div>
     </div>
@@ -362,7 +362,7 @@
         </div>
         {% else %}
         <div class="text-center py-5">
-            <i class="bi bi-inbox" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block"></i>
+            <i class="bi bi-inbox" style="font-size:3rem;color:#00f5ff;margin-bottom:1rem;display:block"></i>
             <h6 class="text-muted fw-bold">No tickets yet</h6>
             <p class="text-muted mb-3" style="font-size:0.9rem">Create your first support ticket to get started with AI-powered solutions</p>
             <a href="{% url 'create_ticket' %}" class="btn btn-primary" style="border-radius:8px">
