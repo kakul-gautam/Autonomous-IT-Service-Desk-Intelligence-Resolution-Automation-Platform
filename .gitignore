@@ -29,6 +29,7 @@ staticfiles/
 
 # Machine learning artifacts
 *.pkl
+!ai_models/reranker_artifacts_v2/*.pkl
 datasets/
 
 # Logs
